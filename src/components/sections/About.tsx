@@ -42,16 +42,20 @@ function TimelineItem({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 30, scale: 0.95 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.4, delay: index * 0.1 }}
+      transition={{ duration: 0.5, delay: index * 0.15, ease: "easeOut" }}
       className={cn(
-        "relative flex items-start gap-6 pb-12 last:pb-0",
+        "relative flex items-start gap-6 pb-12 last:pb-0 group",
         isLeft ? "md:flex-row-reverse md:text-right" : "md:text-left",
       )}
     >
-      <div className={cn("rounded-lg border border-border bg-card p-5", "md:w-[calc(50%-2rem)]")}>
+      <motion.div
+        className={cn("rounded-lg border border-border bg-card p-5 transition-all duration-300", "md:w-[calc(50%-2rem)]")}
+        whileHover={{ scale: 1.02, boxShadow: "0 10px 40px rgba(0,0,0,0.1)" }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      >
         <Badge
           variant="outline"
           className="w-fit border-primary/30 px-3 py-1 font-heading text-sm font-semibold text-primary"
@@ -64,18 +68,32 @@ function TimelineItem({
         <p className="mt-1 text-sm leading-relaxed text-secondary">
           {item.description}
         </p>
-      </div>
+      </motion.div>
 
       <div className="relative flex flex-col items-center">
-        <div
+        <motion.div
           className={cn(
-            "flex h-10 w-10 shrink-0 items-center justify-center rounded-full shadow-sm",
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-full shadow-sm relative z-10",
             colorClass,
           )}
+          whileHover={{ scale: 1.2 }}
+          transition={{ type: "spring", stiffness: 400, damping: 15 }}
         >
-          <Icon className="h-5 w-5" />
-        </div>
-        <div className="absolute top-10 h-full w-px bg-gradient-to-b from-primary/30 to-transparent md:block" />
+          <Icon className="h-5 w-5 relative z-10" />
+          <motion.span
+            className="absolute inset-0 rounded-full bg-current opacity-30"
+            animate={{ scale: [1, 1.4, 1] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: index * 0.3 }}
+          />
+        </motion.div>
+        <motion.div
+          className="absolute top-10 h-full w-px bg-gradient-to-b from-primary/30 to-transparent"
+          initial={{ scaleY: 0 }}
+          whileInView={{ scaleY: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.4 + index * 0.1, ease: "easeOut" }}
+          style={{ transformOrigin: "top" }}
+        />
       </div>
 
       <div className="hidden flex-1 md:block md:w-[calc(50%-2rem)]" />
@@ -269,15 +287,29 @@ export default function About() {
         </div>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           className="mt-24"
         >
-          <h3 className="mb-12 text-center font-heading text-2xl font-bold text-foreground sm:text-3xl">
-            Chronologie
-          </h3>
+          <motion.h3
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="mb-12 text-center font-heading text-2xl font-bold text-foreground sm:text-3xl"
+          >
+            <motion.span
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="gradient-text"
+            >
+              Chronologie
+            </motion.span>
+          </motion.h3>
           <div className="relative mx-auto max-w-3xl">
             {siteConfig.about.timeline.map((item, index) => (
               <TimelineItem
