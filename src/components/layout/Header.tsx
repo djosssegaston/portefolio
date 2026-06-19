@@ -49,8 +49,8 @@ export default function Header() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         isScrolled
-          ? "bg-background/90 border-b border-border backdrop-blur-md shadow-sm"
-          : "bg-background/80 backdrop-blur-sm lg:bg-transparent lg:backdrop-blur-none"
+          ? "bg-background border-b border-border shadow-sm"
+          : "bg-background lg:bg-transparent"
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -95,7 +95,7 @@ export default function Header() {
 
           <button
             onClick={() => setIsMobileOpen(!isMobileOpen)}
-            className="lg:hidden relative z-50 p-2 rounded-lg transition-colors bg-background/60 hover:bg-muted"
+            className="lg:hidden relative z-[60] p-2 rounded-lg transition-colors bg-background hover:bg-muted"
             aria-label={isMobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
           >
             {isMobileOpen ? (
