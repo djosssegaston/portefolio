@@ -56,19 +56,16 @@ export default function Header() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
-          <Link href="/" className="flex items-center gap-2.5 group">
+          <Link href="/" className="flex items-center group">
             {logoUrl ? (
-              <div className="w-9 h-9 rounded-lg overflow-hidden shadow-sm transition-transform group-hover:scale-105">
-                <Image src={logoUrl} alt="Logo" width={36} height={36} className="w-full h-full object-contain" />
+              <div className="h-10 w-auto overflow-hidden transition-transform group-hover:scale-105">
+                <Image src={logoUrl} alt="Logo" width={160} height={40} className="h-10 w-auto object-contain" />
               </div>
             ) : (
-              <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center shadow-sm transition-transform group-hover:scale-105">
+              <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center shadow-sm transition-transform group-hover:scale-105">
                 <span className="text-white font-heading font-bold text-sm">DA</span>
               </div>
             )}
-            <span className="font-heading font-bold text-base text-foreground">
-              DJOSSE Adechina
-            </span>
           </Link>
 
           <nav className="hidden lg:flex items-center gap-1">
