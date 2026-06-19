@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -20,11 +21,19 @@ export default function Header() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [logoUrl, setLogoUrl] = useState("");
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/config")
+      .then((r) => r.json())
+      .then((data) => { if (data.logo) setLogoUrl(data.logo) })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -48,9 +57,15 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center shadow-sm transition-transform group-hover:scale-105">
-              <span className="text-white font-heading font-bold text-sm">DA</span>
-            </div>
+            {logoUrl ? (
+              <div className="w-9 h-9 rounded-lg overflow-hidden shadow-sm transition-transform group-hover:scale-105">
+                <Image src={logoUrl} alt="Logo" width={36} height={36} className="w-full h-full object-contain" />
+              </div>
+            ) : (
+              <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center shadow-sm transition-transform group-hover:scale-105">
+                <span className="text-white font-heading font-bold text-sm">DA</span>
+              </div>
+            )}
             <span className="font-heading font-bold text-base text-foreground">
               DJOSSE Adechina
             </span>

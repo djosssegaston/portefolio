@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   Globe,
@@ -53,8 +53,24 @@ type Settings = typeof defaultSettings;
 
 export default function AdminParametres() {
   const { toast } = useToast();
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const faviconInputRef = useRef<HTMLInputElement>(null);
   const [settings, setSettings] = useState<Settings>({ ...defaultSettings });
   const [activeTab, setActiveTab] = useState("general");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [faviconUrl, setFaviconUrl] = useState("");
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingFavicon, setUploadingFavicon] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/config")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.logo) setLogoUrl(data.logo);
+        if (data.favicon) setFaviconUrl(data.favicon);
+      })
+      .catch(() => {});
+  }, []);
 
   const update = <K extends keyof Settings>(key: K, value: Settings[K]) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
@@ -73,6 +89,54 @@ export default function AdminParametres() {
       title: "Paramètres réinitialisés",
       description: "Tous les paramètres ont été réinitialisés aux valeurs par défaut.",
     });
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingLogo(true);
+    const fd = new FormData();
+    fd.append("file", file);
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      await fetch("/api/config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ logo: data.url }),
+      });
+      setLogoUrl(data.url);
+      toast({ title: "Logo mis à jour", description: "Le logo du site a été changé." });
+      if (e.target) e.target.value = "";
+    } catch {
+      toast({ title: "Erreur", description: "Échec de l'upload du logo", variant: "destructive" });
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingFavicon(true);
+    const fd = new FormData();
+    fd.append("file", file);
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      await fetch("/api/config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ favicon: data.url }),
+      });
+      setFaviconUrl(data.url);
+      toast({ title: "Favicon mis à jour", description: "Le favicon du site a été changé." });
+      if (e.target) e.target.value = "";
+    } catch {
+      toast({ title: "Erreur", description: "Échec de l'upload du favicon", variant: "destructive" });
+    } finally {
+      setUploadingFavicon(false);
+    }
   };
 
   const container = {
@@ -142,24 +206,46 @@ export default function AdminParametres() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Logo</label>
                     <div className="flex items-center gap-3">
-                      <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center shrink-0 border-2 border-dashed border-border">
-                        <ImageIcon className="w-6 h-6 text-muted-foreground" />
+                      <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center shrink-0 border-2 border-dashed border-border overflow-hidden">
+                        {logoUrl ? (
+                          <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                        ) : (
+                          <ImageIcon className="w-6 h-6 text-muted-foreground" />
+                        )}
                       </div>
-                      <Button variant="outline" size="sm" className="gap-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        ref={logoInputRef}
+                        onChange={handleLogoUpload}
+                        className="hidden"
+                      />
+                      <Button variant="outline" size="sm" className="gap-2" onClick={() => logoInputRef.current?.click()} disabled={uploadingLogo}>
                         <Upload className="w-3.5 h-3.5" />
-                        Upload
+                        {uploadingLogo ? "Upload..." : "Upload"}
                       </Button>
                     </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Favicon</label>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0 border-2 border-dashed border-border">
-                        <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0 border-2 border-dashed border-border overflow-hidden">
+                        {faviconUrl ? (
+                          <img src={faviconUrl} alt="Favicon" className="w-full h-full object-contain" />
+                        ) : (
+                          <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                        )}
                       </div>
-                      <Button variant="outline" size="sm" className="gap-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        ref={faviconInputRef}
+                        onChange={handleFaviconUpload}
+                        className="hidden"
+                      />
+                      <Button variant="outline" size="sm" className="gap-2" onClick={() => faviconInputRef.current?.click()} disabled={uploadingFavicon}>
                         <Upload className="w-3.5 h-3.5" />
-                        Upload
+                        {uploadingFavicon ? "Upload..." : "Upload"}
                       </Button>
                     </div>
                   </div>

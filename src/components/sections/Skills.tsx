@@ -75,15 +75,13 @@ function SkillCard({ name, level, icon, description }: { name: string; level: nu
 
 export default function Skills() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [activeTab, setActiveTab] = useState<string>("all")
+  const [activeTab, setActiveTab] = useState<string>(categoryOrder[0])
 
   const filteredSkills = useMemo(() => {
     const query = searchQuery.toLowerCase().trim()
     let filtered = skills
 
-    if (activeTab !== "all") {
-      filtered = filtered.filter((s) => s.category === activeTab)
-    }
+    filtered = filtered.filter((s) => s.category === activeTab)
 
     if (query) {
       filtered = filtered.filter(
@@ -136,18 +134,12 @@ export default function Skills() {
         </div>
 
         <Tabs
-          defaultValue="all"
+          defaultValue={categoryOrder[0]}
           value={activeTab}
           onValueChange={setActiveTab}
           className="w-full"
         >
           <TabsList className="mx-auto mb-10 flex h-auto flex-wrap justify-center gap-2 bg-transparent p-1">
-            <TabsTrigger
-              value="all"
-              className="rounded-lg px-4 py-2 text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm text-secondary"
-            >
-              Toutes
-            </TabsTrigger>
             {categoryOrder.map((cat) => (
               <TabsTrigger
                 key={cat}
