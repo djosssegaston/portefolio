@@ -164,7 +164,7 @@ export default function Hero() {
       ref={sectionRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative min-h-[calc(100vh-4rem)] overflow-hidden pt-16 lg:min-h-[calc(100vh-5rem)] lg:pt-20"
+      className="relative min-h-screen overflow-hidden pt-16 lg:pt-20"
       aria-label="Section d'accueil"
     >
 
@@ -282,11 +282,11 @@ export default function Hero() {
                     transformStyle: "preserve-3d",
                   }}
                 >
-                  <div className="h-64 w-64 sm:h-72 sm:w-72 md:h-80 md:w-80 lg:h-96 lg:w-96 overflow-hidden rounded-xl shadow-lg">
+                  <div className="h-72 w-72 sm:h-80 sm:w-80 md:h-[22rem] md:w-[22rem] lg:h-[26rem] lg:w-[26rem] overflow-hidden rounded-xl shadow-lg">
                     {avatarUrl ? (
-                      <img src={avatarUrl} alt={siteConfig.fullName} className="h-full w-full object-cover" />
+                      <img src={avatarUrl} alt={siteConfig.fullName} className="h-full w-full object-contain" />
                     ) : (
-                      <img src={DEFAULT_AVATAR} alt={siteConfig.fullName} className="h-full w-full object-cover" />
+                      <img src={DEFAULT_AVATAR} alt={siteConfig.fullName} className="h-full w-full object-contain" />
                     )}
                   </div>
                 </motion.div>
