@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -57,15 +56,13 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           <Link href="/" className="flex items-center group">
-            {logoUrl ? (
-              <div className="h-10 w-auto overflow-hidden transition-transform group-hover:scale-105">
-                <Image src={logoUrl} alt="Logo" width={160} height={40} className="h-10 w-auto object-contain" />
-              </div>
-            ) : (
-              <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center shadow-sm transition-transform group-hover:scale-105">
-                <span className="text-white font-heading font-bold text-sm">DA</span>
-              </div>
-            )}
+            <div className="h-14 lg:h-16 transition-transform group-hover:scale-105">
+              <img
+                src={logoUrl || "/images/avatars/logo.png"}
+                alt="Logo"
+                className="h-full w-auto"
+              />
+            </div>
           </Link>
 
           <nav className="hidden lg:flex items-center gap-1">
