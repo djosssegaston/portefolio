@@ -164,11 +164,11 @@ export default function Hero() {
       ref={sectionRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative min-h-screen overflow-hidden pt-20 lg:pt-24"
+      className="relative min-h-screen overflow-hidden pt-16 lg:pt-20"
       aria-label="Section d'accueil"
     >
 
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-5rem)] flex-col justify-center px-4 sm:px-6 lg:px-8 lg:min-h-[calc(100vh-6rem)]">
+      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-4rem)] flex-col justify-center px-4 sm:px-6 lg:px-8 lg:min-h-[calc(100vh-5rem)]">
         <div className="mx-auto w-full max-w-7xl">
           <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-16">
             <motion.div
