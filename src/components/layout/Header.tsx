@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -107,43 +108,78 @@ export default function Header() {
         </div>
       </div>
 
-      {isMobileOpen && (
-        <>
-          <div
+      <AnimatePresence>
+        {isMobileOpen && (
+          <motion.div
+            key="backdrop"
             className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
             onClick={() => setIsMobileOpen(false)}
           />
-          <div className="fixed top-0 right-0 bottom-0 w-72 z-50 bg-background border-l border-border shadow-2xl lg:hidden">
-            <div className="flex flex-col pt-20 px-6 h-full bg-background">
+        )}
+        {isMobileOpen && (
+          <motion.div
+            key="panel"
+            className="fixed top-0 right-0 bottom-0 w-72 z-50 bg-background border-l border-border shadow-2xl lg:hidden"
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+          >
+            <motion.div
+              className="flex flex-col pt-24 px-6 h-full bg-background"
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: {},
+                visible: { transition: { staggerChildren: 0.06, delayChildren: 0.15 } },
+              }}
+            >
               <div className="flex flex-col gap-1">
                 {navLinks.map((link) => (
-                  <Link
+                  <motion.div
                     key={link.name}
-                    href={link.href}
-                    onClick={() => setIsMobileOpen(false)}
-                    className={cn(
-                      "flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-colors",
-                      isActive(link.href)
-                        ? "text-primary bg-primary/10 border border-primary/20"
-                        : "text-foreground/70 hover:text-foreground hover:bg-muted"
-                    )}
+                    variants={{
+                      hidden: { opacity: 0, x: 30 },
+                      visible: { opacity: 1, x: 0, transition: { duration: 0.35 } },
+                    }}
                   >
-                    {link.name}
-                  </Link>
+                    <Link
+                      href={link.href}
+                      onClick={() => setIsMobileOpen(false)}
+                      className={cn(
+                        "flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-colors",
+                        isActive(link.href)
+                          ? "text-primary bg-primary/10 border border-primary/20"
+                          : "text-foreground/70 hover:text-foreground hover:bg-muted"
+                      )}
+                    >
+                      {link.name}
+                    </Link>
+                  </motion.div>
                 ))}
               </div>
 
-              <div className="mt-auto pb-8">
+              <motion.div
+                className="mt-auto pb-8"
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.35 } },
+                }}
+              >
                 <Link href="/contact" onClick={() => setIsMobileOpen(false)}>
                   <Button className="w-full rounded-lg">
                     Me Contacter
                   </Button>
                 </Link>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
