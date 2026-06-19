@@ -42,10 +42,10 @@ function TimelineItem({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30, scale: 0.95 }}
+      initial={{ opacity: 0, y: 40, scale: 0.9 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.5, delay: index * 0.15, ease: "easeOut" }}
+      viewport={{ margin: "-60px" }}
+      transition={{ duration: 0.7, delay: index * 0.15, ease: "easeOut" }}
       className={cn(
         "relative flex items-start gap-6 pb-12 last:pb-0 group",
         isLeft ? "md:flex-row-reverse md:text-right" : "md:text-left",
@@ -90,7 +90,7 @@ function TimelineItem({
           className="absolute top-10 h-full w-px bg-gradient-to-b from-primary/30 to-transparent"
           initial={{ scaleY: 0 }}
           whileInView={{ scaleY: 1 }}
-          viewport={{ once: true }}
+          viewport={{ margin: "-60px" }}
           transition={{ duration: 0.8, delay: 0.4 + index * 0.1, ease: "easeOut" }}
           style={{ transformOrigin: "top" }}
         />
@@ -289,21 +289,21 @@ export default function About() {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
+          viewport={{ margin: "-50px" }}
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="mt-24"
         >
           <motion.h3
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ margin: "-50px" }}
             transition={{ duration: 0.5, delay: 0.1 }}
             className="mb-12 text-center font-heading text-2xl font-bold text-foreground sm:text-3xl"
           >
             <motion.span
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
+              viewport={{ margin: "-50px" }}
               transition={{ duration: 0.5, delay: 0.2 }}
               className="gradient-text"
             >
