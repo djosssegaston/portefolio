@@ -87,11 +87,12 @@ export default function Header() {
           </nav>
 
           <div className="hidden lg:flex items-center gap-3">
-            <Link href="/statistiques">
-              <Button size="lg" className="rounded-lg gap-2">
-                <MessageCircle className="h-4 w-4" />
-                Assistance
-              </Button>
+            <Link
+              href="/chat"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white shadow-sm hover:bg-primary/90 hover:scale-110 transition-all duration-300"
+              aria-label="Messagerie"
+            >
+              <MessageCircle className="h-5 w-5" />
             </Link>
           </div>
 
