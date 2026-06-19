@@ -54,9 +54,9 @@ export default function Header() {
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-20">
+        <div className="flex items-center justify-between h-20 lg:h-24">
           <Link href="/" className="flex items-center group">
-            <div className="h-16 lg:h-20 transition-transform group-hover:scale-105">
+            <div className="h-20 lg:h-24 transition-transform group-hover:scale-105">
               <img
                 src={logoUrl || "/images/avatars/logo.png"}
                 alt="Logo"
