@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -87,9 +87,10 @@ export default function Header() {
           </nav>
 
           <div className="hidden lg:flex items-center gap-3">
-            <Link href="/contact">
-              <Button size="lg" className="rounded-lg">
-                Me Contacter
+            <Link href="/statistiques">
+              <Button size="lg" className="rounded-lg gap-2">
+                <MessageCircle className="h-4 w-4" />
+                Assistance
               </Button>
             </Link>
           </div>
