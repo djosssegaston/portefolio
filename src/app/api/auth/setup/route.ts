@@ -14,7 +14,7 @@ export async function GET() {
         password VARCHAR(255) NOT NULL DEFAULT '',
         avatar VARCHAR(500) NOT NULL DEFAULT '',
         role VARCHAR(50) NOT NULL DEFAULT 'editor',
-        permissions TEXT NOT NULL DEFAULT '[]',
+        permissions TEXT NOT NULL,
         two_factor_enabled TINYINT(1) NOT NULL DEFAULT 0,
         two_factor_secret VARCHAR(255) NOT NULL DEFAULT '',
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
