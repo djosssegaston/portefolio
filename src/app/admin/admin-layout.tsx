@@ -69,19 +69,44 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const [adminUser, setAdminUser] = useState<{ name: string; email: string; role: string } | null>(null);
 
   useEffect(() => {
     setMounted(true);
+    checkAuth();
   }, []);
 
   useEffect(() => {
     setSidebarOpen(false);
   }, [pathname]);
 
-  const handleLogout = () => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("admin_authenticated");
+  async function checkAuth() {
+    const token = localStorage.getItem("admin_token");
+    if (!token) {
+      router.replace("/admin/login");
+      return;
     }
+    try {
+      const res = await fetch("/api/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Invalid token");
+      const data = await res.json();
+      setAdminUser(data.admin);
+    } catch {
+      localStorage.removeItem("admin_token");
+      localStorage.removeItem("admin_user");
+      router.replace("/admin/login");
+      return;
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem("admin_token");
+    localStorage.removeItem("admin_user");
     router.push("/admin/login");
   };
 
@@ -90,7 +115,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return pathname.startsWith(href);
   };
 
-  if (!mounted) return null;
+  if (!mounted || checking) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/25">
+            <span className="text-white font-heading font-bold text-sm">DA</span>
+          </div>
+          <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -252,11 +288,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <button className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
                     <Avatar className="w-8 h-8">
                       <AvatarImage src="/images/avatar.jpg" alt="Admin" />
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">AD</AvatarFallback>
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                        {adminUser?.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() || "AD"}
+                      </AvatarFallback>
                     </Avatar>
                     <div className="hidden sm:block text-left">
-                      <p className="text-sm font-medium text-gray-900 leading-tight">Adechina</p>
-                      <p className="text-xs text-gray-500">Administrateur</p>
+                      <p className="text-sm font-medium text-gray-900 leading-tight">{adminUser?.name || "Admin"}</p>
+                      <p className="text-xs text-gray-500 capitalize">{adminUser?.role?.replace("_", " ") || "Administrateur"}</p>
                     </div>
                     <ChevronDown className="w-4 h-4 text-gray-500 hidden sm:block" />
                   </button>
@@ -267,6 +305,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <DropdownMenuItem onClick={() => router.push("/admin/profil")} className="hover:bg-gray-100 focus:bg-gray-100 text-gray-700">
                     <UserCircle className="w-4 h-4 mr-2 text-gray-500" />
                     Profil
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push("/admin/securite")} className="hover:bg-gray-100 focus:bg-gray-100 text-gray-700">
+                    <Shield className="w-4 h-4 mr-2 text-gray-500" />
+                    Sécurité (2FA)
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => router.push("/admin/parametres")} className="hover:bg-gray-100 focus:bg-gray-100 text-gray-700">
                     <Settings className="w-4 h-4 mr-2 text-gray-500" />

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Bot, Send, User, Square, X, Minimize2, Sparkles } from "lucide-react"
+import { Bot, Send, User, Square, X, Minimize2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
@@ -93,7 +93,14 @@ export default function ChatbotModal() {
         className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-white shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-110 active:scale-95 transition-all duration-300 group"
         aria-label="Assistant IA"
       >
-        <Sparkles className="h-6 w-6 relative z-10" />
+        <svg className="h-6 w-6 relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v1a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+          <path d="M19 10a7 7 0 0 1-14 0" />
+          <line x1="12" y1="17" x2="12" y2="22" />
+          <line x1="8" y1="22" x2="16" y2="22" />
+          <circle cx="9" cy="9" r="1" fill="currentColor" />
+          <circle cx="15" cy="9" r="1" fill="currentColor" />
+        </svg>
         <span className="absolute inset-0 rounded-full bg-white/20 scale-0 group-hover:scale-100 transition-transform duration-300" />
       </button>
 
@@ -124,7 +131,7 @@ export default function ChatbotModal() {
             >
               <div className="flex items-center gap-3 border-b border-border bg-muted/50 px-4 py-3 shrink-0">
                 <Bot className="h-5 w-5 text-primary" />
-                <span className="text-sm font-medium text-foreground">Assistant IA</span>
+                <span className="text-sm font-medium text-foreground">Ade IA</span>
                 <span className="ml-auto flex items-center gap-1.5 text-[10px] text-emerald-600">
                   <span className={`h-2 w-2 rounded-full ${isStreaming ? "bg-yellow-500 animate-pulse" : "bg-emerald-500"}`} />
                   {isStreaming ? "Réflexion..." : "En ligne"}
