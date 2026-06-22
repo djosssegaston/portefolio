@@ -74,8 +74,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     setMounted(true);
+    if (pathname === "/admin/login") {
+      setChecking(false);
+      return;
+    }
     checkAuth();
-  }, []);
+  }, [pathname]);
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -114,6 +118,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (href === "/admin") return pathname === "/admin";
     return pathname.startsWith(href);
   };
+
+  if (pathname === "/admin/login") {
+    return <>{children}</>;
+  }
 
   if (!mounted || checking) {
     return (
