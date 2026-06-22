@@ -120,11 +120,12 @@ export default function LoginPage() {
             className="flex flex-col items-center mb-8"
           >
             <Link href="/" className="flex items-center gap-2 group mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/25 transition-transform group-hover:scale-105">
-                <span className="text-white font-heading font-bold text-sm">DA</span>
-              </div>
+              <svg className="w-10 h-10" viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="10" fill="currentColor" className="text-primary" />
+                <text x="20" y="25" textAnchor="middle" fill="white" fontSize="16" fontWeight="bold" fontFamily="system-ui">ET</text>
+              </svg>
               <span className="font-heading font-bold text-xl">
-                <span className="gradient-text">DJOSSE Adechina</span>
+                <span className="gradient-text">ElisTech</span>
               </span>
             </Link>
             <h1 className="text-2xl font-heading font-bold text-gray-900">
