@@ -93,7 +93,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen bg-[#0B1120]">
+    <div className="min-h-screen bg-gray-50">
       {/* Mobile overlay */}
       <AnimatePresence>
         {sidebarOpen && (
@@ -132,11 +132,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-30 bg-[#0B1120] border-r border-white/10 hidden lg:flex flex-col transition-all duration-300",
+          "fixed inset-y-0 left-0 z-30 bg-white border-r border-gray-200 shadow-lg hidden lg:flex flex-col transition-all duration-300",
           sidebarCollapsed ? "w-20" : "w-64"
         )}
       >
-        <div className="flex items-center justify-between h-16 px-4 border-b border-white/10">
+        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
           {!sidebarCollapsed && (
             <Link href="/admin" className="flex items-center gap-2 group">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/25 transition-transform group-hover:scale-105">
@@ -156,7 +156,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           )}
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="p-1.5 rounded-lg hover:bg-white/5 text-secondary hover:text-white transition-colors hidden lg:block"
+            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors hidden lg:block"
           >
             {sidebarCollapsed ? (
               <ChevronRight className="w-4 h-4" />
@@ -179,10 +179,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group relative",
                     active
                       ? "bg-primary/15 text-primary"
-                      : "text-secondary hover:text-white hover:bg-white/5"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                   )}
                 >
-                  <Icon className={cn("w-5 h-5 shrink-0", active ? "text-primary" : "text-secondary group-hover:text-white")} />
+                  <Icon className={cn("w-5 h-5 shrink-0", active ? "text-primary" : "text-gray-400 group-hover:text-gray-600")} />
                   {!sidebarCollapsed && (
                     <span>{link.name}</span>
                   )}
@@ -199,12 +199,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </nav>
         </ScrollArea>
 
-        <div className={cn("border-t border-white/10 p-3", sidebarCollapsed && "px-2")}>
+        <div className={cn("border-t border-gray-200 p-3", sidebarCollapsed && "px-2")}>
           {!sidebarCollapsed ? (
             <Link
               href="/"
               target="_blank"
-              className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-secondary hover:text-white hover:bg-white/5 transition-colors"
+              className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
             >
               <ExternalLink className="w-4 h-4" />
               <span>Voir le site</span>
@@ -213,7 +213,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link
               href="/"
               target="_blank"
-              className="flex items-center justify-center py-2.5 rounded-lg text-secondary hover:text-white hover:bg-white/5 transition-colors"
+              className="flex items-center justify-center py-2.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
             >
               <ExternalLink className="w-4 h-4" />
             </Link>
@@ -227,53 +227,53 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         sidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
       )}>
         {/* Top header */}
-        <header className="sticky top-0 z-20 bg-white/[0.03] backdrop-blur-xl border-b border-white/10">
+        <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-xl border-b border-gray-200 shadow-sm">
           <div className="flex items-center justify-between h-16 px-4 lg:px-6">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-lg hover:bg-white/5 transition-colors"
+                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
                 aria-label="Ouvrir le menu"
               >
-                <Menu className="w-5 h-5 text-white" />
+                <Menu className="w-5 h-5 text-gray-700" />
               </button>
             </div>
 
             <div className="flex items-center gap-3">
-              <button className="relative p-2 rounded-lg hover:bg-white/5 transition-colors">
-                <Bell className="w-5 h-5 text-secondary" />
+              <button className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                <Bell className="w-5 h-5 text-gray-500" />
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
               </button>
 
-              <Separator orientation="vertical" className="h-8 bg-white/10" />
+              <Separator orientation="vertical" className="h-8 bg-gray-200" />
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+                  <button className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
                     <Avatar className="w-8 h-8">
                       <AvatarImage src="/images/avatar.jpg" alt="Admin" />
                       <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">AD</AvatarFallback>
                     </Avatar>
                     <div className="hidden sm:block text-left">
-                      <p className="text-sm font-medium text-white leading-tight">Adechina</p>
-                      <p className="text-xs text-secondary">Administrateur</p>
+                      <p className="text-sm font-medium text-gray-900 leading-tight">Adechina</p>
+                      <p className="text-xs text-gray-500">Administrateur</p>
                     </div>
-                    <ChevronDown className="w-4 h-4 text-secondary hidden sm:block" />
+                    <ChevronDown className="w-4 h-4 text-gray-500 hidden sm:block" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-[#111827] border-white/10 text-white">
-                  <DropdownMenuLabel className="text-secondary">Mon Compte</DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-white/10" />
-                  <DropdownMenuItem onClick={() => router.push("/admin/profil")} className="hover:bg-white/5 focus:bg-white/5 text-white">
-                    <UserCircle className="w-4 h-4 mr-2 text-secondary" />
+                <DropdownMenuContent align="end" className="w-56 bg-white border-gray-200 text-gray-900">
+                  <DropdownMenuLabel className="text-gray-500">Mon Compte</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-gray-200" />
+                  <DropdownMenuItem onClick={() => router.push("/admin/profil")} className="hover:bg-gray-100 focus:bg-gray-100 text-gray-700">
+                    <UserCircle className="w-4 h-4 mr-2 text-gray-500" />
                     Profil
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push("/admin/parametres")} className="hover:bg-white/5 focus:bg-white/5 text-white">
-                    <Settings className="w-4 h-4 mr-2 text-secondary" />
+                  <DropdownMenuItem onClick={() => router.push("/admin/parametres")} className="hover:bg-gray-100 focus:bg-gray-100 text-gray-700">
+                    <Settings className="w-4 h-4 mr-2 text-gray-500" />
                     Paramètres
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-white/10" />
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-400 focus:text-red-400 hover:bg-white/5 focus:bg-white/5">
+                  <DropdownMenuSeparator className="bg-gray-200" />
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600 hover:bg-gray-100 focus:bg-gray-100">
                     <LogOut className="w-4 h-4 mr-2" />
                     Déconnexion
                   </DropdownMenuItem>
@@ -305,7 +305,7 @@ function SidebarContent({
 }) {
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between h-16 px-4 border-b border-white/10">
+      <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
         <Link href="/admin" className="flex items-center gap-2 group" onClick={onClose}>
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/25 transition-transform group-hover:scale-105">
             <span className="text-white font-heading font-bold text-xs">DA</span>
@@ -316,7 +316,7 @@ function SidebarContent({
         </Link>
         <button
           onClick={onClose}
-          className="p-1.5 rounded-lg hover:bg-white/5 text-secondary transition-colors"
+          className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
@@ -336,10 +336,10 @@ function SidebarContent({
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group relative",
                   active
                     ? "bg-primary/15 text-primary"
-                    : "text-secondary hover:text-white hover:bg-white/5"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                 )}
               >
-                <Icon className={cn("w-5 h-5 shrink-0", active ? "text-primary" : "text-secondary group-hover:text-white")} />
+                  <Icon className={cn("w-5 h-5 shrink-0", active ? "text-primary" : "text-gray-400 group-hover:text-gray-600")} />
                 <span>{link.name}</span>
                 {active && (
                   <motion.span
@@ -354,11 +354,11 @@ function SidebarContent({
         </nav>
       </ScrollArea>
 
-      <div className="border-t border-white/10 p-3">
+      <div className="border-t border-gray-200 p-3">
         <Link
           href="/"
           target="_blank"
-          className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-secondary hover:text-white hover:bg-white/5 transition-colors"
+          className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
         >
           <ExternalLink className="w-4 h-4" />
           <span>Voir le site</span>

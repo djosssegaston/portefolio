@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { readFile, writeFile } from "fs/promises"
-import path from "path"
+import { query, getPool } from "@/lib/db"
 
-const chatsPath = path.join(process.cwd(), "src", "lib", "data", "chats.json")
 const WA_NUMBER = "22901234567"
 
 export async function POST(req: NextRequest) {
@@ -14,25 +12,23 @@ export async function POST(req: NextRequest) {
     }
 
     const timestamp = Date.now()
-    const chatMessage = {
-      id: `msg_${timestamp}`,
-      name: name?.trim() || "Visiteur",
-      message: message.trim(),
-      timestamp,
-      from: "client",
-    }
+    const id = `msg_${timestamp}`
+    const displayName = name?.trim() || "Visiteur"
 
-    const current = await readFile(chatsPath, "utf-8")
-      .then((d) => JSON.parse(d))
-      .catch(() => [])
+    const pool = await getPool()
+    await pool.execute(
+      `INSERT INTO chat_messages (id, name, message, timestamp, src) VALUES (?, ?, ?, FROM_UNIXTIME(?/1000), 'client')`,
+      [id, displayName, message.trim(), timestamp]
+    )
 
-    current.push(chatMessage)
-    await writeFile(chatsPath, JSON.stringify(current, null, 2), "utf-8")
-
-    const text = `📩 *Nouveau message du site web*\n\n*De:* ${chatMessage.name}\n*Message:* ${chatMessage.message}`
+    const text = `📩 *Nouveau message du site web*\n\n*De:* ${displayName}\n*Message:* ${message.trim()}`
     const waUrl = `https://api.whatsapp.com/send?phone=${WA_NUMBER}&text=${encodeURIComponent(text)}`
 
-    return NextResponse.json({ success: true, message: chatMessage, waUrl })
+    return NextResponse.json({
+      success: true,
+      message: { id, name: displayName, message: message.trim(), timestamp, from: "client" },
+      waUrl,
+    })
   } catch (error) {
     console.error("Chat send error:", error)
     return NextResponse.json({ error: "Erreur lors de l'envoi" }, { status: 500 })

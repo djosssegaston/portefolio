@@ -245,6 +245,31 @@ export interface CountryData {
   flag: string;
 }
 
+export interface EventTraining {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  longDescription: string;
+  type: "formation" | "conference" | "workshop" | "hackathon" | "meetup" | "autre";
+  startDate: string;
+  endDate?: string;
+  location: string;
+  organizer: string;
+  organizerUrl?: string;
+  image?: string;
+  gallery: string[];
+  tags: string[];
+  certificate: boolean;
+  certificateUrl?: string;
+  registrationUrl?: string;
+  speaker?: string;
+  speakerBio?: string;
+  skills: string[];
+  featured: boolean;
+  status: "upcoming" | "completed" | "cancelled";
+}
+
 export interface SEOSettings {
   metaTitle: string;
   metaDescription: string;

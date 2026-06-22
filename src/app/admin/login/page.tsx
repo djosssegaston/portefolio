@@ -53,19 +53,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#0B1120] flex items-center justify-center p-4">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.04]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(37, 99, 235, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(37, 99, 235, 0.5) 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
-        }}
-      />
+    <div className="min-h-screen relative overflow-hidden bg-gray-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
       </div>
 
       <motion.div
@@ -89,7 +80,7 @@ export default function LoginPage() {
                 <span className="gradient-text">DJOSSE Adechina</span>
               </span>
             </Link>
-            <h1 className="text-2xl font-heading font-bold text-white">
+            <h1 className="text-2xl font-heading font-bold text-gray-900">
               Connexion Administrateur
             </h1>
             <p className="text-sm text-secondary mt-1">
@@ -107,7 +98,7 @@ export default function LoginPage() {
             className="space-y-5"
           >
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-white">
+              <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                 Adresse Email
               </Label>
               <div className="relative">
@@ -126,7 +117,7 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium text-white">
+              <Label htmlFor="password" className="text-sm font-medium text-gray-700">
                 Mot de Passe
               </Label>
               <div className="relative">
@@ -144,7 +135,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:text-white transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -162,7 +153,7 @@ export default function LoginPage() {
                   checked={remember}
                   onCheckedChange={(checked) => setRemember(checked as boolean)}
                   disabled={loading}
-                  className="border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                  className="border-gray-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                 />
                 <Label htmlFor="remember" className="text-sm text-secondary cursor-pointer">
                   Se souvenir de moi
@@ -197,7 +188,7 @@ export default function LoginPage() {
             className="mt-6 text-center text-xs text-secondary"
           >
             <span className="block mb-1">Identifiants de démonstration :</span>
-            <code className="bg-white/5 px-2 py-0.5 rounded text-xs text-secondary">
+            <code className="bg-gray-100 px-2 py-0.5 rounded text-xs text-gray-600">
               admin@djosse.com / admin123
             </code>
           </motion.p>

@@ -111,7 +111,7 @@ export default function AdminDashboard() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <h1 className="text-2xl lg:text-3xl font-heading font-bold text-white">
+        <h1 className="text-2xl lg:text-3xl font-heading font-bold text-foreground">
           {greeting}, Adechina
         </h1>
         <p className="text-secondary mt-1">
@@ -170,7 +170,7 @@ export default function AdminDashboard() {
         >
           <Card className="rounded-lg border border-border bg-card">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-heading text-white">Visiteurs</CardTitle>
+              <CardTitle className="text-lg font-heading text-foreground">Visiteurs</CardTitle>
               <CardDescription className="text-secondary">Évolution des visites sur 12 mois</CardDescription>
             </CardHeader>
             <CardContent>
@@ -225,7 +225,7 @@ export default function AdminDashboard() {
         >
           <Card className="rounded-lg border border-border bg-card">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-heading text-white">Pages vues</CardTitle>
+              <CardTitle className="text-lg font-heading text-foreground">Pages vues</CardTitle>
               <CardDescription className="text-secondary">Nombre de pages vues par mois</CardDescription>
             </CardHeader>
             <CardContent>
@@ -278,7 +278,7 @@ export default function AdminDashboard() {
           <Card className="rounded-lg border border-border bg-card">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <div>
-                <CardTitle className="text-lg font-heading text-white">Activité Récente</CardTitle>
+                <CardTitle className="text-lg font-heading text-foreground">Activité Récente</CardTitle>
                 <CardDescription className="text-secondary">Les dernières actions effectuées</CardDescription>
               </div>
               <Button variant="ghost" size="sm" className="text-primary gap-1">
@@ -305,7 +305,7 @@ export default function AdminDashboard() {
                       {item.type === "delete" && <XCircle className="w-4 h-4" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-white">
+                      <p className="text-sm text-foreground">
                         <span className="font-medium">{item.user}</span>{" "}
                         <span className="text-secondary">{item.action}</span>
                       </p>
@@ -326,7 +326,7 @@ export default function AdminDashboard() {
           <Card className="rounded-lg border border-border bg-card">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <div>
-                <CardTitle className="text-lg font-heading text-white">Messages Récents</CardTitle>
+                <CardTitle className="text-lg font-heading text-foreground">Messages Récents</CardTitle>
                 <CardDescription className="text-secondary">3 derniers messages</CardDescription>
               </div>
               <Button variant="ghost" size="sm" className="text-primary gap-1">
@@ -351,7 +351,7 @@ export default function AdminDashboard() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white truncate">{msg.name}</p>
+                      <p className="text-sm font-medium text-foreground truncate">{msg.name}</p>
                       <p className="text-xs text-secondary truncate">{msg.subject}</p>
                       <p className="text-xs text-secondary mt-0.5">{msg.date}</p>
                     </div>
@@ -370,7 +370,7 @@ export default function AdminDashboard() {
       >
         <Card className="rounded-lg border border-border bg-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-heading text-white">Aperçu Rapide</CardTitle>
+            <CardTitle className="text-lg font-heading text-foreground">Aperçu Rapide</CardTitle>
             <CardDescription className="text-secondary">État général de votre portfolio</CardDescription>
           </CardHeader>
           <CardContent>
@@ -386,7 +386,7 @@ export default function AdminDashboard() {
                       <Icon className={cn("w-5 h-5", stat.color)} />
                     </div>
                     <div>
-                      <p className="text-xl font-bold font-heading text-white">{stat.value}</p>
+                      <p className="text-xl font-bold font-heading text-foreground">{stat.value}</p>
                       <p className="text-xs text-secondary">{stat.label}</p>
                     </div>
                   </div>
@@ -449,7 +449,7 @@ function StatCard({
             </Badge>
           </div>
           <div className="mt-3">
-            <p className="text-2xl font-bold font-heading text-white">
+            <p className="text-2xl font-bold font-heading text-foreground">
               {count.toLocaleString()}
             </p>
             <p className="text-sm text-secondary mt-0.5">{label}</p>

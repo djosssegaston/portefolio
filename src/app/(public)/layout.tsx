@@ -1,5 +1,5 @@
 import { Header, Footer } from "@/components/layout";
-import FloatingChart from "@/components/shared/FloatingChart";
+import ChatbotModal from "@/components/chatbot/ChatbotModal";
 import AnimatedBackground from "@/components/shared/AnimatedBackground";
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
@@ -9,7 +9,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <AnimatedBackground />
       <main className="min-h-screen">{children}</main>
       <Footer />
-      <FloatingChart />
+      <ChatbotModal />
     </>
   );
 }

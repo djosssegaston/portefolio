@@ -399,7 +399,7 @@ export default function AdminMessages() {
                         className={cn(
                           "w-full text-left p-4 transition-colors duration-200 hover:bg-accent/50 relative",
                           selectedId === msg.id && "bg-accent",
-                          !msg.read && "bg-blue-50/50"
+                          !msg.read && "bg-primary/5"
                         )}
                       >
                         <div className="flex items-start gap-3">

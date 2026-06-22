@@ -6,6 +6,7 @@ import Projects from "@/components/sections/Projects";
 import Experience from "@/components/sections/Experience";
 import Education from "@/components/sections/Education";
 import Certifications from "@/components/sections/Certifications";
+import Events from "@/components/sections/Events";
 import Testimonials from "@/components/sections/Testimonials";
 import Blog from "@/components/sections/Blog";
 import FAQ from "@/components/sections/FAQ";
@@ -22,6 +23,7 @@ export default function HomePage() {
       <Experience />
       <Education />
       <Certifications />
+      <Events />
       <Testimonials />
       <Blog />
       <FAQ />
