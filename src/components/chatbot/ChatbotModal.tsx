@@ -121,13 +121,13 @@ export default function ChatbotModal() {
               initial={{ opacity: 0, y: 40, scale: 0.95 }}
               animate={
                 isMinimized
-                  ? { opacity: 1, y: 0, scale: 0.85, width: 320, height: 60 }
-                  : { opacity: 1, y: 0, scale: 1, width: 400, height: 600 }
+                  ? { opacity: 1, y: 0, scale: 0.85 }
+                  : { opacity: 1, y: 0, scale: 1 }
               }
               exit={{ opacity: 0, y: 40, scale: 0.95 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed bottom-6 right-6 z-50 flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl origin-bottom-right sm:bottom-24 sm:right-6"
-              style={{ maxHeight: "calc(100vh - 48px)" }}
+              className={`fixed bottom-6 right-6 z-50 flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl origin-bottom-right ${isMinimized ? "w-[160px] sm:w-[320px] h-14" : "w-[calc(100%-32px)] sm:w-[400px] md:w-[450px] lg:w-[500px]"} sm:bottom-24 sm:right-6`}
+              style={isMinimized ? {} : { maxHeight: "calc(100vh - 48px)" }}
             >
               <div className="flex items-center gap-3 border-b border-border bg-muted/50 px-4 py-3 shrink-0">
                 <Bot className="h-5 w-5 text-primary" />
