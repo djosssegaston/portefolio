@@ -88,21 +88,43 @@ export default function ChatbotModal() {
 
   return (
     <>
-      <button
-        onClick={() => { setIsOpen(true); setIsMinimized(false) }}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-white shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-110 active:scale-95 transition-all duration-300 group"
-        aria-label="Assistant IA"
-      >
-        <svg className="h-6 w-6 relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 2a3 3 0 0 0-3 3v1a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
-          <path d="M19 10a7 7 0 0 1-14 0" />
-          <line x1="12" y1="17" x2="12" y2="22" />
-          <line x1="8" y1="22" x2="16" y2="22" />
-          <circle cx="9" cy="9" r="1" fill="currentColor" />
-          <circle cx="15" cy="9" r="1" fill="currentColor" />
-        </svg>
-        <span className="absolute inset-0 rounded-full bg-white/20 scale-0 group-hover:scale-100 transition-transform duration-300" />
-      </button>
+      <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3">
+        <AnimatePresence>
+          {!isOpen && (
+            <motion.div
+              initial={{ opacity: 0, x: 20, scale: 0.8 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 20, scale: 0.8 }}
+              transition={{ type: "spring", damping: 20, stiffness: 300 }}
+              className="flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-lg shadow-primary/10 border border-primary/20 cursor-pointer"
+              onClick={() => { setIsOpen(true); setIsMinimized(false) }}
+            >
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
+              </span>
+              <span className="text-xs font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent whitespace-nowrap">
+                Nous sommes en ligne
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <button
+          onClick={() => { setIsOpen(true); setIsMinimized(false) }}
+          className="relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-white shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-110 active:scale-95 transition-all duration-300 group shrink-0"
+          aria-label="Assistant IA"
+        >
+          <svg className="h-6 w-6 relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v1a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+            <path d="M19 10a7 7 0 0 1-14 0" />
+            <line x1="12" y1="17" x2="12" y2="22" />
+            <line x1="8" y1="22" x2="16" y2="22" />
+            <circle cx="9" cy="9" r="1" fill="currentColor" />
+            <circle cx="15" cy="9" r="1" fill="currentColor" />
+          </svg>
+          <span className="absolute inset-0 rounded-full bg-white/20 scale-0 group-hover:scale-100 transition-transform duration-300" />
+        </button>
+      </div>
 
       <AnimatePresence>
         {isOpen && (
