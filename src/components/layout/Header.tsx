@@ -59,15 +59,12 @@ export default function Header() {
     <>
       <header
         className={cn(
-          "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
+          "fixed top-0 left-0 right-0 z-40 transition-all duration-500",
           isScrolled
-            ? "bg-white/70 dark:bg-gray-950/70 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50 shadow-[0_1px_30px_-10px_rgba(0,0,0,0.1)]"
-            : "bg-transparent"
+            ? "bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50 shadow-[0_1px_30px_-10px_rgba(0,0,0,0.1)]"
+            : "bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm"
         )}
       >
-        {!isScrolled && (
-          <div className="absolute inset-0 bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm lg:hidden" />
-        )}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20">
             <Link href="/" className="flex items-center group relative">
