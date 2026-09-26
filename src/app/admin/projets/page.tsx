@@ -35,8 +35,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
-import { projects as initialProjects } from "@/lib/data/projects";
 import type { Project } from "@/types";
+import { useResource } from "@/hooks/use-resource";
 
 const categoryLabels: Record<string, string> = {
   saas: "SaaS",
@@ -75,7 +75,7 @@ const emptyProject: Omit<Project, "id"> & { id?: string } = {
 
 export default function AdminProjets() {
   const { toast } = useToast();
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const { items: projects, loading, create, update, remove } = useResource<Project>("projects");
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -116,28 +116,24 @@ export default function AdminProjets() {
     setDeleteDialogOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editingId) {
-      setProjects((prev) =>
-        prev.map((p) => (p.id === editingId ? ({ ...form, id: editingId } as Project) : p))
-      );
+      const saved = await update(editingId, form);
+      if (!saved) return;
       toast({ title: "Projet modifié", description: "Le projet a été mis à jour avec succès." });
     } else {
-      const newProject: Project = {
-        ...form,
-        id: `proj-${Date.now()}`,
-        date: new Date().toISOString().split("T")[0],
-      } as Project;
-      setProjects((prev) => [newProject, ...prev]);
+      const created = await create({ ...form, date: form.date || new Date().toISOString().split("T")[0] });
+      if (!created) return;
       toast({ title: "Projet créé", description: "Le nouveau projet a été ajouté avec succès." });
     }
     setDialogOpen(false);
     resetForm();
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deletingId) {
-      setProjects((prev) => prev.filter((p) => p.id !== deletingId));
+      const ok = await remove(deletingId);
+      if (!ok) return;
       toast({
         title: "Projet supprimé",
         description: "Le projet a été supprimé définitivement.",
@@ -148,21 +144,18 @@ export default function AdminProjets() {
     setDeletingId(null);
   };
 
-  const toggleStatus = (id: string) => {
-    setProjects((prev) =>
-      prev.map((p) =>
-        p.id === id
-          ? { ...p, status: p.status === "published" ? ("draft" as const) : ("published" as const) }
-          : p
-      )
-    );
+  const toggleStatus = async (id: string) => {
     const project = projects.find((p) => p.id === id);
+    if (!project) return;
+    const nextStatus = project.status === "published" ? "draft" : "published";
+    const saved = await update(id, { status: nextStatus });
+    if (!saved) return;
     toast({
-      title: project?.status === "published" ? "Projet masqué" : "Projet publié",
+      title: nextStatus === "published" ? "Projet publié" : "Projet masqué",
       description:
-        project?.status === "published"
-          ? "Le projet est maintenant en brouillon."
-          : "Le projet est maintenant publié.",
+        nextStatus === "published"
+          ? "Le projet est maintenant visible sur le site."
+          : "Le projet est maintenant en brouillon.",
     });
   };
 
@@ -202,7 +195,7 @@ export default function AdminProjets() {
             Gestion des Projets
           </h1>
           <p className="text-muted-foreground mt-1">
-            {projects.length} projet{projects.length > 1 ? "s" : ""} au total
+            {loading ? "Chargement..." : `${projects.length} projet${projects.length > 1 ? "s" : ""} au total`}
           </p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -329,7 +322,8 @@ export default function AdminProjets() {
               <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>
                 Annuler
               </Button>
-              <Button onClick={handleSave}>
+              <Button onClick={handleSave}
+                disabled={loading}>
                 {editingId ? "Modifier" : "Créer le projet"}
               </Button>
             </div>

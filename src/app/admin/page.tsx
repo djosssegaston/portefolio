@@ -1,22 +1,22 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import {
-  Users,
-  Eye,
-  Download,
   MessageSquare,
   TrendingUp,
   TrendingDown,
+  Activity,
   FileText,
   Briefcase,
   MessageCircle,
   Clock,
   ArrowRight,
   CheckCircle,
-  XCircle,
+  Sparkles,
+  Award,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
 import {
   Chart as ChartJS,
@@ -36,7 +36,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { analytics } from "@/lib/data/analytics";
+import type { ContactMessage } from "@/types";
 
 ChartJS.register(
   CategoryScale,
@@ -50,45 +50,134 @@ ChartJS.register(
   Filler
 );
 
-const recentActivity = [
-  { user: "Sophie Martin", action: "a ajouté un nouveau projet", date: "Il y a 2 heures", type: "create" },
-  { user: "Thomas Bernard", action: "a modifié l'article de blog", date: "Il y a 4 heures", type: "update" },
-  { user: "Marie Dubois", action: "a supprimé un témoignage", date: "Il y a 6 heures", type: "delete" },
-  { user: "Lucas Petit", action: "a publié une nouvelle certification", date: "Il y a 8 heures", type: "create" },
-  { user: "Emma Richard", action: "a mis à jour ses compétences", date: "Il y a 1 jour", type: "update" },
-];
+type DashboardStats = {
+  projects: number;
+  projectsPublished: number;
+  blogPosts: number;
+  blogPublished: number;
+  messages: number;
+  messagesUnread: number;
+  testimonials: number;
+  testimonialsValidated: number;
+  skills: number;
+  experiences: number;
+  education: number;
+  certifications: number;
+  services: number;
+  faq: number;
+  events: number;
+};
 
-const recentMessages = [
-  { name: "Jean Dupont", subject: "Demande de devis pour site web", date: "Il y a 1 heure", read: false, avatar: "JD" },
-  { name: "Marie Lambert", subject: "Proposition de collaboration", date: "Il y a 3 heures", read: false, avatar: "ML" },
-  { name: "Pierre Moreau", subject: "Question sur vos services", date: "Il y a 5 heures", read: true, avatar: "PM" },
-];
+const emptyStats: DashboardStats = {
+  projects: 0,
+  projectsPublished: 0,
+  blogPosts: 0,
+  blogPublished: 0,
+  messages: 0,
+  messagesUnread: 0,
+  testimonials: 0,
+  testimonialsValidated: 0,
+  skills: 0,
+  experiences: 0,
+  education: 0,
+  certifications: 0,
+  services: 0,
+  faq: 0,
+  events: 0,
+};
 
-const quickStats = [
-  { label: "Projets publiés", value: 12, icon: Briefcase, color: "text-blue-400", bg: "bg-blue-500/10" },
-  { label: "Articles publiés", value: 24, icon: FileText, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-  { label: "Commentaires en attente", value: 5, icon: MessageCircle, color: "text-amber-400", bg: "bg-amber-500/10" },
-  { label: "Témoignages validés", value: 8, icon: CheckCircle, color: "text-violet-400", bg: "bg-violet-500/10" },
-];
+type Trend = "up" | "down" | "neutral";
+
+type ActivityItem = {
+  key: string;
+  label: string;
+  detail: string;
+  meta: string;
+  type: "create" | "update" | "delete";
+  icon: React.ElementType;
+};
+
+function toNumber(value: unknown) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function parseStats(data: any): DashboardStats {
+  const d = data ?? {};
+  return {
+    projects: toNumber(d.projects),
+    projectsPublished: toNumber(d.projectsPublished),
+    blogPosts: toNumber(d.blogPosts),
+    blogPublished: toNumber(d.blogPublished),
+    messages: toNumber(d.messages),
+    messagesUnread: toNumber(d.messagesUnread),
+    testimonials: toNumber(d.testimonials),
+    testimonialsValidated: toNumber(d.testimonialsValidated),
+    skills: toNumber(d.skills),
+    experiences: toNumber(d.experiences),
+    education: toNumber(d.education),
+    certifications: toNumber(d.certifications),
+    services: toNumber(d.services),
+    faq: toNumber(d.faq),
+    events: toNumber(d.events),
+  };
+}
+
+function authHeaders(): Record<string, string> {
+  const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+async function readJson(res: Response) {
+  return res.json().catch(() => ({}));
+}
+
+async function fetchStats(): Promise<DashboardStats> {
+  const res = await fetch("/api/stats", { headers: authHeaders(), cache: "no-store" });
+  const payload = await readJson(res);
+  if (!res.ok) throw new Error(payload?.error ?? "Erreur de chargement");
+  return parseStats(payload?.data);
+}
+
+async function fetchMessages(view: "inbox" | "archived"): Promise<ContactMessage[]> {
+  const res = await fetch(`/api/messages?view=${view}`, {
+    headers: authHeaders(),
+    cache: "no-store",
+  });
+  const payload = await readJson(res);
+  if (!res.ok) throw new Error(payload?.error ?? "Erreur de chargement");
+  return Array.isArray(payload?.data) ? (payload.data as ContactMessage[]) : [];
+}
+
+function relativeDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const minutes = Math.floor((Date.now() - date.getTime()) / 60000);
+  if (minutes < 1) return "À l'instant";
+  if (minutes < 60) return `Il y a ${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `Il y a ${hours} h`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `Il y a ${days} j`;
+  return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+}
 
 function useCounter(target: number, duration: number = 1500) {
   const [count, setCount] = useState(0);
-  const started = useRef(false);
+  const frame = useRef<number | null>(null);
 
   useEffect(() => {
-    if (started.current) return;
-    started.current = true;
-
     let startTime: number | null = null;
     const animate = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
+      if (startTime === null) startTime = timestamp;
       const progress = Math.min((timestamp - startTime) / duration, 1);
       setCount(Math.floor(progress * target));
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
+      if (progress < 1) frame.current = requestAnimationFrame(animate);
     };
-    requestAnimationFrame(animate);
+    frame.current = requestAnimationFrame(animate);
+    return () => {
+      if (frame.current !== null) cancelAnimationFrame(frame.current);
+    };
   }, [target, duration]);
 
   return count;
@@ -96,6 +185,10 @@ function useCounter(target: number, duration: number = 1500) {
 
 export default function AdminDashboard() {
   const [greeting, setGreeting] = useState("");
+  const [stats, setStats] = useState<DashboardStats>(emptyStats);
+  const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -103,6 +196,207 @@ export default function AdminDashboard() {
     else if (hour < 18) setGreeting("Bon après-midi");
     else setGreeting("Bonsoir");
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      setError(null);
+      try {
+        const [statsResult, inboxResult, archivedResult] = await Promise.allSettled([
+          fetchStats(),
+          fetchMessages("inbox"),
+          fetchMessages("archived"),
+        ]);
+        if (!active) return;
+        if (statsResult.status === "fulfilled") {
+          setStats(statsResult.value);
+        } else {
+          throw statsResult.reason;
+        }
+        const lists: ContactMessage[] = [];
+        if (inboxResult.status === "fulfilled") lists.push(...inboxResult.value);
+        if (archivedResult.status === "fulfilled") lists.push(...archivedResult.value);
+        setMessages(
+          [...lists].sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+          )
+        );
+      } catch (e: any) {
+        if (active) setError(e?.message ?? "Impossible de charger le tableau de bord");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    load();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const recentMessages = useMemo(
+    () =>
+      messages.slice(0, 3).map((msg) => ({
+        id: msg.id,
+        name: msg.name,
+        subject: msg.subject,
+        date: relativeDate(msg.date),
+        read: msg.read,
+        avatar: msg.name
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .slice(0, 2)
+          .toUpperCase(),
+      })),
+    [messages]
+  );
+
+  const messageVolume = useMemo(() => {
+    const now = new Date();
+    const months: { label: string; value: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const cursor = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push({
+        label: cursor.toLocaleDateString("fr-FR", { month: "short" }),
+        value: messages.filter((m) => {
+          const date = new Date(m.date);
+          return (
+            !Number.isNaN(date.getTime()) &&
+            date.getFullYear() === cursor.getFullYear() &&
+            date.getMonth() === cursor.getMonth()
+          );
+        }).length,
+      });
+    }
+    return months;
+  }, [messages]);
+
+  const contentBreakdown = useMemo(
+    () => [
+      { label: "Projets", value: stats.projects },
+      { label: "Articles", value: stats.blogPosts },
+      { label: "Messages", value: stats.messages },
+      { label: "Témoignages", value: stats.testimonials },
+      { label: "Compétences", value: stats.skills },
+      { label: "Expériences", value: stats.experiences },
+      { label: "Formations", value: stats.education },
+      { label: "Certifications", value: stats.certifications },
+      { label: "Services", value: stats.services },
+    ],
+    [stats]
+  );
+
+  const activityItems: ActivityItem[] = useMemo(
+    () => [
+      {
+        key: "last-message",
+        label: "Dernier message reçu",
+        detail: messages.length ? `de ${messages[0].name}` : "aucun message en base",
+        meta: messages.length ? relativeDate(messages[0].date) || "—" : "—",
+        type: "create",
+        icon: Clock,
+      },
+      {
+        key: "projects",
+        label: "Projets",
+        detail: `${stats.projects} au total`,
+        meta: `${stats.projectsPublished} publiés`,
+        type: "update",
+        icon: Briefcase,
+      },
+      {
+        key: "blog",
+        label: "Articles de blog",
+        detail: `${stats.blogPosts} au total`,
+        meta: `${stats.blogPublished} publiés`,
+        type: "update",
+        icon: FileText,
+      },
+      {
+        key: "messages",
+        label: "Messages",
+        detail: `${stats.messages} reçus`,
+        meta: `${stats.messagesUnread} non lus`,
+        type: stats.messagesUnread > 0 ? "delete" : "create",
+        icon: MessageSquare,
+      },
+      {
+        key: "testimonials",
+        label: "Témoignages",
+        detail: `${stats.testimonials} au total`,
+        meta: `${stats.testimonialsValidated} validés`,
+        type: "update",
+        icon: CheckCircle,
+      },
+      {
+        key: "skills",
+        label: "Compétences",
+        detail: "référencées",
+        meta: String(stats.skills),
+        type: "update",
+        icon: Sparkles,
+      },
+      {
+        key: "experiences",
+        label: "Expériences",
+        detail: "parcours professionnel",
+        meta: String(stats.experiences),
+        type: "update",
+        icon: Briefcase,
+      },
+      {
+        key: "education",
+        label: "Formations",
+        detail: "diplômes et certifications",
+        meta: String(stats.education),
+        type: "update",
+        icon: Award,
+      },
+      {
+        key: "certifications",
+        label: "Certifications",
+        detail: "obtenues",
+        meta: String(stats.certifications),
+        type: "update",
+        icon: CheckCircle,
+      },
+    ],
+    [messages, stats]
+  );
+
+  const quickStats = useMemo(
+    () => [
+      {
+        label: "Projets publiés",
+        value: stats.projectsPublished,
+        icon: Briefcase,
+        color: "text-blue-400",
+        bg: "bg-blue-500/10",
+      },
+      {
+        label: "Articles publiés",
+        value: stats.blogPublished,
+        icon: FileText,
+        color: "text-emerald-400",
+        bg: "bg-emerald-500/10",
+      },
+      {
+        label: "Messages non lus",
+        value: stats.messagesUnread,
+        icon: MessageCircle,
+        color: "text-amber-400",
+        bg: "bg-amber-500/10",
+      },
+      {
+        label: "Témoignages validés",
+        value: stats.testimonialsValidated,
+        icon: CheckCircle,
+        color: "text-violet-400",
+        bg: "bg-violet-500/10",
+      },
+    ],
+    [stats]
+  );
 
   return (
     <div className="space-y-6">
@@ -119,45 +413,68 @@ export default function AdminDashboard() {
         </p>
       </motion.div>
 
+      {(loading || error) && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className={cn(
+            "flex items-center gap-3 px-4 py-3 rounded-lg",
+            error
+              ? "border border-rose-500/30 bg-rose-500/5"
+              : "border border-border bg-card"
+          )}
+        >
+          {error ? (
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+          ) : (
+            <Loader2 className="w-4 h-4 text-secondary shrink-0 animate-spin" />
+          )}
+          <p className={cn("text-sm", error ? "text-rose-300" : "text-secondary")}>
+            {error ?? "Chargement des statistiques..."}
+          </p>
+        </motion.div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          icon={Users}
-          label="Visiteurs"
-          value={analytics.visitors}
-          change="+12.5%"
-          positive
+          icon={Briefcase}
+          label="Projets"
+          value={stats.projects}
+          change="En direct"
+          trend="neutral"
           color="text-blue-400"
           bg="bg-blue-500/10"
           delay={0}
         />
         <StatCard
-          icon={Eye}
-          label="Pages vues"
-          value={analytics.pageViews}
-          change="+8.2%"
-          positive
+          icon={FileText}
+          label="Articles de blog"
+          value={stats.blogPosts}
+          change="En direct"
+          trend="neutral"
           color="text-emerald-400"
           bg="bg-emerald-500/10"
           delay={0.1}
         />
         <StatCard
-          icon={Download}
-          label="Téléchargements CV"
-          value={analytics.cvDownloads}
-          change="+23.1%"
-          positive
+          icon={MessageSquare}
+          label="Messages reçus"
+          value={stats.messages}
+          change="En direct"
+          trend="neutral"
           color="text-amber-400"
           bg="bg-amber-500/10"
           delay={0.2}
         />
         <StatCard
-          icon={MessageSquare}
-          label="Messages"
-          value={analytics.messagesCount}
-          change="-3.4%"
-          positive={false}
-          color="text-rose-400"
-          bg="bg-rose-500/10"
+          icon={Sparkles}
+          label="Compétences"
+          value={stats.skills}
+          change="En direct"
+          trend="neutral"
+          color="text-violet-400"
+          bg="bg-violet-500/10"
           delay={0.3}
         />
       </div>
@@ -170,18 +487,18 @@ export default function AdminDashboard() {
         >
           <Card className="rounded-lg border border-border bg-card">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-heading text-foreground">Visiteurs</CardTitle>
-              <CardDescription className="text-secondary">Évolution des visites sur 12 mois</CardDescription>
+              <CardTitle className="text-lg font-heading text-foreground">Messages reçus</CardTitle>
+              <CardDescription className="text-secondary">Volume de messages sur 6 mois</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-52 sm:h-60">
                 <Line
                   data={{
-                    labels: analytics.visitorsChart.map((d) => d.label),
+                    labels: messageVolume.map((d) => d.label),
                     datasets: [
                       {
-                        label: "Visiteurs",
-                        data: analytics.visitorsChart.map((d) => d.value),
+                        label: "Messages reçus",
+                        data: messageVolume.map((d) => d.value),
                         borderColor: "#2563EB",
                         backgroundColor: "rgba(37, 99, 235, 0.15)",
                         fill: true,
@@ -204,7 +521,7 @@ export default function AdminDashboard() {
                       y: {
                         beginAtZero: true,
                         grid: { color: "rgba(255,255,255,0.05)" },
-                        ticks: { color: "#94A3B8" },
+                        ticks: { color: "#94A3B8", precision: 0 },
                       },
                       x: {
                         grid: { display: false },
@@ -225,18 +542,18 @@ export default function AdminDashboard() {
         >
           <Card className="rounded-lg border border-border bg-card">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-heading text-foreground">Pages vues</CardTitle>
-              <CardDescription className="text-secondary">Nombre de pages vues par mois</CardDescription>
+              <CardTitle className="text-lg font-heading text-foreground">Contenu du portfolio</CardTitle>
+              <CardDescription className="text-secondary">Nombre d'éléments par type de contenu</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-52 sm:h-60">
                 <Bar
                   data={{
-                    labels: analytics.pageViewsChart.map((d) => d.label),
+                    labels: contentBreakdown.map((d) => d.label),
                     datasets: [
                       {
-                        label: "Pages vues",
-                        data: analytics.pageViewsChart.map((d) => d.value),
+                        label: "Nombre d'éléments",
+                        data: contentBreakdown.map((d) => d.value),
                         backgroundColor: "rgba(37, 99, 235, 0.7)",
                         borderRadius: 6,
                         borderSkipped: false,
@@ -253,11 +570,11 @@ export default function AdminDashboard() {
                       y: {
                         beginAtZero: true,
                         grid: { color: "rgba(255,255,255,0.05)" },
-                        ticks: { color: "#94A3B8" },
+                        ticks: { color: "#94A3B8", precision: 0 },
                       },
                       x: {
                         grid: { display: false },
-                        ticks: { color: "#94A3B8", maxTicksLimit: 6 },
+                        ticks: { color: "#94A3B8", maxTicksLimit: 9, maxRotation: 60, minRotation: 45 },
                       },
                     },
                   }}
@@ -279,41 +596,49 @@ export default function AdminDashboard() {
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <div>
                 <CardTitle className="text-lg font-heading text-foreground">Activité Récente</CardTitle>
-                <CardDescription className="text-secondary">Les dernières actions effectuées</CardDescription>
+                <CardDescription className="text-secondary">État des contenus du portfolio</CardDescription>
               </div>
               <Button variant="ghost" size="sm" className="text-primary gap-1">
                 Voir tout <ArrowRight className="w-3 h-3" />
               </Button>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="divide-y divide-white/5">
-                {recentActivity.map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 px-6 py-3.5 hover:bg-white/5 transition-colors"
-                  >
-                    <div
-                      className={cn(
-                        "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
-                        item.type === "create" && "bg-emerald-500/10 text-emerald-400",
-                        item.type === "update" && "bg-blue-500/10 text-blue-400",
-                        item.type === "delete" && "bg-rose-500/10 text-rose-400"
-                      )}
-                    >
-                      {item.type === "create" && <CheckCircle className="w-4 h-4" />}
-                      {item.type === "update" && <AlertCircle className="w-4 h-4" />}
-                      {item.type === "delete" && <XCircle className="w-4 h-4" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-foreground">
-                        <span className="font-medium">{item.user}</span>{" "}
-                        <span className="text-secondary">{item.action}</span>
-                      </p>
-                    </div>
-                    <span className="text-xs text-secondary whitespace-nowrap">{item.date}</span>
-                  </div>
-                ))}
-              </div>
+              {loading ? (
+                <div className="flex items-center justify-center gap-2 py-12 text-secondary">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm">Chargement des données...</span>
+                </div>
+              ) : (
+                <div className="divide-y divide-white/5">
+                  {activityItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <div
+                        key={item.key}
+                        className="flex items-center gap-3 px-6 py-3.5 hover:bg-white/5 transition-colors"
+                      >
+                        <div
+                          className={cn(
+                            "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
+                            item.type === "create" && "bg-emerald-500/10 text-emerald-400",
+                            item.type === "update" && "bg-blue-500/10 text-blue-400",
+                            item.type === "delete" && "bg-rose-500/10 text-rose-400"
+                          )}
+                        >
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-foreground">
+                            <span className="font-medium">{item.label}</span>{" "}
+                            <span className="text-secondary">{item.detail}</span>
+                          </p>
+                        </div>
+                        <span className="text-xs text-secondary whitespace-nowrap">{item.meta}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>
@@ -334,30 +659,42 @@ export default function AdminDashboard() {
               </Button>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="divide-y divide-white/5">
-                {recentMessages.map((msg, i) => (
-                  <div
-                    key={i}
-                    className="flex items-start gap-3 px-6 py-3.5 hover:bg-white/5 transition-colors cursor-pointer"
-                  >
-                    <div className="relative shrink-0">
-                      <Avatar className="w-9 h-9">
-                        <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
-                          {msg.avatar}
-                        </AvatarFallback>
-                      </Avatar>
-                      {!msg.read && (
-                        <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-primary rounded-full border-2 border-[#111827]" />
-                      )}
+              {loading ? (
+                <div className="flex items-center justify-center gap-2 py-12 text-secondary">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm">Chargement des messages...</span>
+                </div>
+              ) : recentMessages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 gap-2 px-6 text-center">
+                  <MessageSquare className="w-6 h-6 text-secondary" />
+                  <p className="text-sm text-secondary">Aucun message reçu pour le moment.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-white/5">
+                  {recentMessages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className="flex items-start gap-3 px-6 py-3.5 hover:bg-white/5 transition-colors cursor-pointer"
+                    >
+                      <div className="relative shrink-0">
+                        <Avatar className="w-9 h-9">
+                          <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
+                            {msg.avatar}
+                          </AvatarFallback>
+                        </Avatar>
+                        {!msg.read && (
+                          <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-primary rounded-full border-2 border-[#111827]" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{msg.name}</p>
+                        <p className="text-xs text-secondary truncate">{msg.subject}</p>
+                        <p className="text-xs text-secondary mt-0.5">{msg.date}</p>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{msg.name}</p>
-                      <p className="text-xs text-secondary truncate">{msg.subject}</p>
-                      <p className="text-xs text-secondary mt-0.5">{msg.date}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>
@@ -405,7 +742,7 @@ function StatCard({
   label,
   value,
   change,
-  positive,
+  trend,
   color,
   bg,
   delay,
@@ -414,7 +751,7 @@ function StatCard({
   label: string;
   value: number;
   change: string;
-  positive: boolean;
+  trend: Trend;
   color: string;
   bg: string;
   delay: number;
@@ -437,20 +774,20 @@ function StatCard({
               variant="outline"
               className={cn(
                 "text-xs font-medium border-0",
-                positive ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"
+                trend === "up" && "bg-emerald-500/10 text-emerald-400",
+                trend === "down" && "bg-rose-500/10 text-rose-400",
+                trend === "neutral" && "bg-white/5 text-secondary"
               )}
             >
-              {positive ? (
-                <TrendingUp className="w-3 h-3 mr-0.5" />
-              ) : (
-                <TrendingDown className="w-3 h-3 mr-0.5" />
-              )}
+              {trend === "up" && <TrendingUp className="w-3 h-3 mr-0.5" />}
+              {trend === "down" && <TrendingDown className="w-3 h-3 mr-0.5" />}
+              {trend === "neutral" && <Activity className="w-3 h-3 mr-0.5" />}
               {change}
             </Badge>
           </div>
           <div className="mt-3">
             <p className="text-2xl font-bold font-heading text-foreground">
-              {count.toLocaleString()}
+              {count.toLocaleString("fr-FR")}
             </p>
             <p className="text-sm text-secondary mt-0.5">{label}</p>
           </div>

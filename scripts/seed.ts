@@ -1,5 +1,6 @@
 import mysql from "mysql2/promise"
 import "dotenv/config"
+import { connectionConfig } from "../src/lib/db"
 import { projects } from "../src/lib/data/projects"
 import { skills } from "../src/lib/data/skills"
 import { experiences } from "../src/lib/data/experiences"
@@ -16,19 +17,22 @@ function uuid() {
 }
 
 async function main() {
-  const connection = await mysql.createConnection({ uri: process.env.DATABASE_URL })
+  const connection = await mysql.createConnection({
+    ...(connectionConfig() as any),
+    multipleStatements: true,
+  })
   console.log("Connected\n")
 
-  // Clear tables
+  // Clear tables. `admin_users` is intentionally preserved so the real account is never wiped.
   const tables = [
     "chat_messages", "blog_comments", "blog_posts", "contact_messages", "event_trainings",
     "faq", "services", "testimonials", "certifications", "education", "experiences",
-    "skills", "projects", "admin_users", "site_configs",
+    "skills", "projects",
   ]
   for (const t of tables) {
-    await connection.execute(`DELETE FROM \`${t}\``)
+    await connection.query(`DELETE FROM \`${t}\``)
   }
-  console.log("Cleared existing data\n")
+  console.log("Cleared existing content data (admin_users kept)\n")
 
   // Projects
   for (const p of projects) {

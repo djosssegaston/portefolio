@@ -7,7 +7,8 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
-import { skills } from "@/lib/data/skills"
+import { skills as staticSkills } from "@/lib/data/skills"
+import type { Skill } from "@/types"
 import type { SkillCategory } from "@/types"
 
 const categoryLabels: Record<SkillCategory, string> = {
@@ -73,7 +74,7 @@ function SkillCard({ name, level, icon, description }: { name: string; level: nu
   )
 }
 
-export default function Skills() {
+export default function Skills({ skills = staticSkills }: { skills?: Skill[] }) {
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState<string>(categoryOrder[0])
 

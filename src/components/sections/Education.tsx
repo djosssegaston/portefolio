@@ -3,8 +3,9 @@
 import { motion } from "framer-motion"
 import { GraduationCap, Calendar, CheckCircle2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import type { Education } from "@/types"
 import { Badge } from "@/components/ui/badge"
-import { education } from "@/lib/data/education"
+import { education as staticEducation } from "@/lib/data/education"
 
 const institutionColors = [
   "from-blue-600 to-indigo-600",
@@ -20,7 +21,7 @@ function formatFrenchDate(dateStr: string) {
   })
 }
 
-export default function Education() {
+export default function Education({ education = staticEducation }: { education?: Education[] }) {
   return (
     <section
       id="education"

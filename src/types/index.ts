@@ -199,7 +199,7 @@ export interface AdminUser {
   name: string;
   email: string;
   avatar: string;
-  role: "super-admin" | "admin" | "editor";
+  role: "super_admin" | "admin" | "editor";
   permissions: string[];
 }
 

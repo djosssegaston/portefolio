@@ -4,8 +4,9 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import { motion } from "framer-motion"
 import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+import type { Testimonial } from "@/types"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { testimonials } from "@/lib/data/testimonials"
+import { testimonials as staticTestimonials } from "@/lib/data/testimonials"
 
 function getInitials(name: string) {
   return name
@@ -41,7 +42,7 @@ function formatDate(dateStr: string) {
   })
 }
 
-export default function Testimonials() {
+export default function Testimonials({ testimonials = staticTestimonials }: { testimonials?: Testimonial[] }) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [itemsPerSlide, setItemsPerSlide] = useState(3)
   const [isPaused, setIsPaused] = useState(false)

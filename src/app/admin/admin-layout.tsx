@@ -14,6 +14,7 @@ import {
   Award,
   FileText,
   MessageSquareQuote,
+  MessageSquare,
   Mail,
   HelpCircle,
   Search,
@@ -29,6 +30,7 @@ import {
   ChevronRight,
   ChevronDown,
   ImageIcon,
+  CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -54,6 +56,9 @@ const sidebarLinks = [
   { name: "Certifications", href: "/admin/certifications", icon: Award },
   { name: "Blog", href: "/admin/blog", icon: FileText },
   { name: "Témoignages", href: "/admin/temoignages", icon: MessageSquareQuote },
+  { name: "Commentaires", href: "/admin/commentaires", icon: MessageSquare },
+  { name: "Services", href: "/admin/services", icon: Briefcase },
+  { name: "Événements", href: "/admin/evenements", icon: CalendarDays },
   { name: "Messages", href: "/admin/messages", icon: Mail },
   { name: "FAQ", href: "/admin/faq", icon: HelpCircle },
   { name: "SEO", href: "/admin/seo", icon: Search },

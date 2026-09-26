@@ -31,8 +31,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
-import { certifications as initialCertifications } from "@/lib/data/certifications";
 import type { Certification } from "@/types";
+import { useResource } from "@/hooks/use-resource";
 
 const emptyCertification: Omit<Certification, "id"> & { id?: string } = {
   id: "",
@@ -47,7 +47,7 @@ const emptyCertification: Omit<Certification, "id"> & { id?: string } = {
 
 export default function AdminCertifications() {
   const { toast } = useToast();
-  const [certifications, setCertifications] = useState<Certification[]>(initialCertifications);
+  const { items: certifications, loading, create, update, remove } = useResource<Certification>("certifications");
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -86,33 +86,29 @@ export default function AdminCertifications() {
     setDeleteDialogOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const payload = {
       ...form,
       expiryDate: form.expiryDate || undefined,
       credentialUrl: form.credentialUrl || undefined,
     };
     if (editingId) {
-      setCertifications((prev) =>
-        prev.map((c) => (c.id === editingId ? ({ ...payload, id: editingId } as Certification) : c))
-      );
+      const saved = await update(editingId, payload);
+      if (!saved) return;
       toast({ title: "Certification modifiée", description: "La certification a été mise à jour avec succès." });
     } else {
-      const newCert: Certification = {
-        ...payload,
-        badge: form.badge || "/images/certifications/default.png",
-        id: `cert-${Date.now()}`,
-      } as Certification;
-      setCertifications((prev) => [newCert, ...prev]);
+      const created = await create({ ...payload, badge: form.badge || "/images/certifications/default.png" });
+      if (!created) return;
       toast({ title: "Certification ajoutée", description: "La nouvelle certification a été créée avec succès." });
     }
     setDialogOpen(false);
     resetForm();
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deletingId) {
-      setCertifications((prev) => prev.filter((c) => c.id !== deletingId));
+      const ok = await remove(deletingId);
+      if (!ok) return;
       toast({ title: "Certification supprimée", description: "La certification a été supprimée.", variant: "destructive" });
     }
     setDeleteDialogOpen(false);
@@ -146,7 +142,7 @@ export default function AdminCertifications() {
             Gestion des Certifications
           </h1>
           <p className="text-muted-foreground mt-1">
-            {certifications.length} certification{certifications.length > 1 ? "s" : ""} au total
+            {loading ? "Chargement..." : `${certifications.length} certification${certifications.length > 1 ? "s" : ""} au total`}
           </p>
         </div>
         <Button onClick={openNew} className="gap-2 shrink-0">
@@ -331,7 +327,7 @@ export default function AdminCertifications() {
           </div>
           <div className="flex justify-end gap-3">
             <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>Annuler</Button>
-            <Button onClick={handleSave}>{editingId ? "Modifier" : "Ajouter"}</Button>
+            <Button onClick={handleSave} disabled={loading}>{editingId ? "Modifier" : "Ajouter"}</Button>
           </div>
         </DialogContent>
       </Dialog>

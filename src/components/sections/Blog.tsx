@@ -4,11 +4,12 @@ import { useState, useMemo } from "react"
 import { motion } from "framer-motion"
 import { Search, Clock, ArrowRight, Calendar } from "lucide-react"
 import { cn } from "@/lib/utils"
+import type { BlogPost } from "@/types"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import Link from "next/link"
-import { blogPosts } from "@/lib/data/blog-posts"
+import { blogPosts as staticBlogPosts } from "@/lib/data/blog-posts"
 
 const categoryFilters = [
   { value: "all", label: "Tous" },
@@ -42,7 +43,7 @@ function formatDate(dateStr: string) {
   })
 }
 
-export default function Blog() {
+export default function Blog({ blogPosts = staticBlogPosts }: { blogPosts?: BlogPost[] }) {
   const [searchQuery, setSearchQuery] = useState("")
   const [activeCategory, setActiveCategory] = useState("all")
 

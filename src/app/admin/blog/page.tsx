@@ -38,8 +38,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
-import { blogPosts as initialBlogPosts } from "@/lib/data/blog-posts";
 import type { BlogPost } from "@/types";
+import { useResource } from "@/hooks/use-resource";
 
 const categories = ["Développement", "Technologie", "Business", "Design", "Carrière"];
 
@@ -64,7 +64,7 @@ const emptyBlogPost: Omit<BlogPost, "id"> & { id?: string } = {
 
 export default function AdminBlog() {
   const { toast } = useToast();
-  const [posts, setPosts] = useState<BlogPost[]>(initialBlogPosts);
+  const { items: posts, loading, create, update, remove } = useResource<BlogPost>("blog");
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -123,7 +123,7 @@ export default function AdminBlog() {
     setDeleteDialogOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const slug = form.slug || form.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
     const payload = {
       ...form,
@@ -131,43 +131,41 @@ export default function AdminBlog() {
       scheduledDate: form.scheduledDate || undefined,
     };
     if (editingId) {
-      setPosts((prev) =>
-        prev.map((p) => (p.id === editingId ? ({ ...payload, id: editingId } as BlogPost) : p))
-      );
+      const saved = await update(editingId, payload);
+      if (!saved) return;
       toast({ title: "Article modifié", description: "L'article a été mis à jour avec succès." });
     } else {
-      const newPost: BlogPost = {
+      const created = await create({
         ...payload,
-        id: `blog-${Date.now()}`,
-        date: new Date().toISOString().split("T")[0],
+        date: form.date || new Date().toISOString().split("T")[0],
         comments: [],
-      } as BlogPost;
-      setPosts((prev) => [newPost, ...prev]);
+      });
+      if (!created) return;
       toast({ title: "Article créé", description: "Le nouvel article a été ajouté avec succès." });
     }
     setDialogOpen(false);
     resetForm();
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deletingId) {
-      setPosts((prev) => prev.filter((p) => p.id !== deletingId));
+      const ok = await remove(deletingId);
+      if (!ok) return;
       toast({ title: "Article supprimé", description: "L'article a été supprimé.", variant: "destructive" });
     }
     setDeleteDialogOpen(false);
     setDeletingId(null);
   };
 
-  const togglePublish = (id: string) => {
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.id === id ? { ...p, published: !p.published, scheduledDate: !p.published ? "" : p.scheduledDate } : p
-      )
-    );
+  const togglePublish = async (id: string) => {
     const post = posts.find((p) => p.id === id);
+    if (!post) return;
+    const nextPublished = !post.published;
+    const saved = await update(id, { published: nextPublished });
+    if (!saved) return;
     toast({
-      title: post?.published ? "Article masqué" : "Article publié",
-      description: post?.published ? "L'article est maintenant en brouillon." : "L'article est maintenant visible.",
+      title: nextPublished ? "Article masqué" : "Article publié",
+      description: nextPublished ? "L'article est maintenant en brouillon." : "L'article est maintenant visible.",
     });
   };
 
@@ -204,7 +202,9 @@ export default function AdminBlog() {
             Gestion du Blog
           </h1>
           <p className="text-muted-foreground mt-1">
-            {posts.length} article{posts.length > 1 ? "s" : ""} au total
+            {loading
+              ? "Chargement..."
+              : `${posts.length} article${posts.length > 1 ? "s" : ""} au total`}
           </p>
         </div>
         <Button onClick={openNew} className="gap-2 shrink-0">
@@ -469,7 +469,7 @@ export default function AdminBlog() {
           </div>
           <div className="flex justify-end gap-3">
             <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>Annuler</Button>
-            <Button onClick={handleSave}>{editingId ? "Modifier" : "Créer l'article"}</Button>
+            <Button onClick={handleSave} disabled={loading}>{editingId ? "Modifier" : "Créer l'article"}</Button>
           </div>
         </DialogContent>
       </Dialog>

@@ -8,11 +8,12 @@ import {
   Users, ExternalLink, Star, Clock, Award, ImageIcon
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import type { EventTraining } from "@/types"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { events } from "@/lib/data/events"
+import { events as staticEvents } from "@/lib/data/events"
 
 const typeFilters = [
   { value: "all", label: "Tous" },
@@ -60,7 +61,7 @@ function formatDate(dateStr: string) {
   })
 }
 
-export default function Events() {
+export default function Events({ events = staticEvents }: { events?: EventTraining[] }) {
   const [searchQuery, setSearchQuery] = useState("")
   const [activeType, setActiveType] = useState("all")
 

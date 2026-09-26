@@ -21,12 +21,12 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
-import { testimonials as initialTestimonials } from "@/lib/data/testimonials";
 import type { Testimonial } from "@/types";
+import { useResource } from "@/hooks/use-resource";
 
 export default function AdminTestimonials() {
   const { toast } = useToast();
-  const [testimonials, setTestimonials] = useState<Testimonial[]>(initialTestimonials);
+  const { items: testimonials, loading, update, remove } = useResource<Testimonial>("testimonials");
   const [search, setSearch] = useState("");
 
   const { pending, published } = useMemo(() => {
@@ -45,18 +45,18 @@ export default function AdminTestimonials() {
     };
   }, [testimonials, search]);
 
-  const handleValidate = (id: string) => {
-    setTestimonials((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, validated: true } : t))
-    );
+  const handleValidate = async (id: string) => {
+    const saved = await update(id, { validated: true });
+    if (!saved) return;
     toast({
       title: "Témoignage validé",
       description: "Le témoignage est maintenant visible sur le site.",
     });
   };
 
-  const handleReject = (id: string) => {
-    setTestimonials((prev) => prev.filter((t) => t.id !== id));
+  const handleReject = async (id: string) => {
+    const ok = await remove(id);
+    if (!ok) return;
     toast({
       title: "Témoignage rejeté",
       description: "Le témoignage a été rejeté et supprimé.",
@@ -64,10 +64,9 @@ export default function AdminTestimonials() {
     });
   };
 
-  const handleRemove = (id: string) => {
-    setTestimonials((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, validated: false } : t))
-    );
+  const handleRemove = async (id: string) => {
+    const saved = await update(id, { validated: false });
+    if (!saved) return;
     toast({
       title: "Témoignage retiré",
       description: "Le témoignage est maintenant en attente de validation.",
@@ -207,7 +206,7 @@ export default function AdminTestimonials() {
             Gestion des Témoignages
           </h1>
           <p className="text-muted-foreground mt-1">
-            {testimonials.length} témoignage{testimonials.length > 1 ? "s" : ""} au total
+            {loading ? "Chargement..." : `${testimonials.length} témoignage${testimonials.length > 1 ? "s" : ""} au total`}
           </p>
         </div>
       </motion.div>

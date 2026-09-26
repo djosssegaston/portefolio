@@ -90,7 +90,10 @@ export default function AdminProfil() {
 
       await fetch("/api/config", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("admin_token")}`,
+        },
         body: JSON.stringify({ avatar: data.url }),
       });
 
@@ -119,7 +122,10 @@ export default function AdminProfil() {
 
       await fetch("/api/config", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("admin_token")}`,
+        },
         body: JSON.stringify({ aboutImage: data.url }),
       });
 
@@ -136,7 +142,10 @@ export default function AdminProfil() {
     try {
       await fetch("/api/config", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("admin_token")}`,
+        },
         body: JSON.stringify({
           avatar: avatarUrl,
           aboutImage: aboutImageUrl,

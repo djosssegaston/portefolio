@@ -32,8 +32,8 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
-import { experiences as initialExperiences } from "@/lib/data/experiences";
 import type { Experience } from "@/types";
+import { useResource } from "@/hooks/use-resource";
 
 const emptyExperience: Omit<Experience, "id"> & { id?: string } = {
   id: "",
@@ -49,7 +49,7 @@ const emptyExperience: Omit<Experience, "id"> & { id?: string } = {
 
 export default function AdminExperiences() {
   const { toast } = useToast();
-  const [experiences, setExperiences] = useState<Experience[]>(initialExperiences);
+  const { items: experiences, loading, create, update, remove } = useResource<Experience>("experiences");
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -91,31 +91,28 @@ export default function AdminExperiences() {
     setDeleteDialogOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const payload = {
       ...form,
       endDate: form.current ? undefined : form.endDate || undefined,
     };
     if (editingId) {
-      setExperiences((prev) =>
-        prev.map((e) => (e.id === editingId ? ({ ...payload, id: editingId } as Experience) : e))
-      );
+      const saved = await update(editingId, payload);
+      if (!saved) return;
       toast({ title: "Expérience modifiée", description: "L'expérience a été mise à jour avec succès." });
     } else {
-      const newExp: Experience = {
-        ...payload,
-        id: `exp-${Date.now()}`,
-      } as Experience;
-      setExperiences((prev) => [newExp, ...prev]);
+      const created = await create(payload);
+      if (!created) return;
       toast({ title: "Expérience ajoutée", description: "La nouvelle expérience a été créée avec succès." });
     }
     setDialogOpen(false);
     resetForm();
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deletingId) {
-      setExperiences((prev) => prev.filter((e) => e.id !== deletingId));
+      const ok = await remove(deletingId);
+      if (!ok) return;
       toast({ title: "Expérience supprimée", description: "L'expérience a été supprimée.", variant: "destructive" });
     }
     setDeleteDialogOpen(false);
@@ -155,7 +152,9 @@ export default function AdminExperiences() {
             Gestion des Expériences
           </h1>
           <p className="text-muted-foreground mt-1">
-            {experiences.length} expérience{experiences.length > 1 ? "s" : ""} au total
+            {loading
+              ? "Chargement..."
+              : `${experiences.length} expérience${experiences.length > 1 ? "s" : ""} au total`}
           </p>
         </div>
         <Button onClick={openNew} className="gap-2 shrink-0">
@@ -369,7 +368,7 @@ export default function AdminExperiences() {
           </div>
           <div className="flex justify-end gap-3">
             <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>Annuler</Button>
-            <Button onClick={handleSave}>{editingId ? "Modifier" : "Ajouter"}</Button>
+            <Button onClick={handleSave} disabled={loading}>{editingId ? "Modifier" : "Ajouter"}</Button>
           </div>
         </DialogContent>
       </Dialog>

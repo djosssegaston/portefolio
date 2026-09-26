@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Save,
@@ -16,6 +16,7 @@ import {
   Check,
   Plus,
   X,
+  Loader2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -57,14 +58,53 @@ Disallow: /_next/
   sitemapUrl: "https://djosse-adechina.com/sitemap.xml",
 };
 
+function authHeaders(): Record<string, string> {
+  const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+async function readJson(res: Response) {
+  return res.json().catch(() => ({}));
+}
+
+function normalizeSeo(data: any): SEOSettings {
+  const merged = { ...defaultSeo, ...(data ?? {}) };
+  return {
+    ...merged,
+    keywords: Array.isArray(merged.keywords) ? merged.keywords : defaultSeo.keywords,
+  };
+}
+
 export default function AdminSEO() {
   const { toast } = useToast();
   const [seo, setSeo] = useState<SEOSettings>(defaultSeo);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [keywordInput, setKeywordInput] = useState("");
   const [twitterSite, setTwitterSite] = useState("@djosse_adechina");
   const [twitterCreator, setTwitterCreator] = useState("@djosse_adechina");
   const [noIndex, setNoIndex] = useState(false);
   const [enableSitemap, setEnableSitemap] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoadError(null);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/seo", { cache: "no-store" });
+      const payload = await readJson(res);
+      if (!res.ok) throw new Error(payload?.error ?? "Erreur de chargement");
+      setSeo(normalizeSeo(payload?.data));
+    } catch (e: any) {
+      setLoadError(e?.message ?? "Impossible de charger les paramètres SEO");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const addKeyword = () => {
     if (keywordInput.trim() && !seo.keywords.includes(keywordInput.trim())) {
@@ -86,11 +126,30 @@ export default function AdminSEO() {
     toast({ title: "Réinitialisé", description: "Les paramètres SEO ont été réinitialisés." });
   };
 
-  const handleSave = () => {
-    toast({
-      title: "Paramètres SEO sauvegardés",
-      description: "Toutes les modifications ont été enregistrées avec succès.",
-    });
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/seo", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify(seo),
+      });
+      const payload = await readJson(res);
+      if (!res.ok) throw new Error(payload?.error ?? "Erreur serveur");
+      if (payload?.data) setSeo(normalizeSeo(payload.data));
+      toast({
+        title: "Paramètres SEO sauvegardés",
+        description: "Toutes les modifications ont été enregistrées avec succès.",
+      });
+    } catch (e: any) {
+      toast({
+        title: "Échec de la sauvegarde",
+        description: e?.message ?? "Erreur serveur",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const truncatedDesc = (text: string, max: number) =>
@@ -121,16 +180,32 @@ export default function AdminSEO() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={handleReset} className="gap-2">
+          <Button variant="outline" onClick={handleReset} className="gap-2" disabled={saving}>
             <RotateCcw className="w-4 h-4" />
             Réinitialiser
           </Button>
-          <Button onClick={handleSave} className="gap-2">
-            <Save className="w-4 h-4" />
-            Sauvegarder
+          <Button onClick={handleSave} className="gap-2" disabled={saving || loading}>
+            {saving ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            {saving ? "Sauvegarde..." : "Sauvegarder"}
           </Button>
         </div>
       </motion.div>
+
+      {loadError && (
+        <motion.div variants={item}>
+          <div className="flex items-start gap-2 p-3 rounded-lg border border-amber-200 bg-amber-50">
+            <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+            <p className="text-xs text-amber-800">
+              Impossible de charger les paramètres SEO ({loadError}). Les valeurs
+              par défaut sont affichées, la sauvegarde reste disponible.
+            </p>
+          </div>
+        </motion.div>
+      )}
 
       <Tabs defaultValue="general" className="space-y-4">
         <TabsList>
@@ -528,9 +603,13 @@ export default function AdminSEO() {
             </motion.div>
 
             <motion.div variants={item} className="flex justify-end">
-              <Button onClick={handleSave} className="gap-2">
-                <Save className="w-4 h-4" />
-                Sauvegarder les paramètres
+              <Button onClick={handleSave} className="gap-2" disabled={saving || loading}>
+                {saving ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+                {saving ? "Sauvegarde..." : "Sauvegarder les paramètres"}
               </Button>
             </motion.div>
           </motion.div>

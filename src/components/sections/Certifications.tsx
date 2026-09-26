@@ -3,9 +3,10 @@
 import { motion } from "framer-motion"
 import { Award, ExternalLink, Calendar } from "lucide-react"
 import { cn } from "@/lib/utils"
+import type { Certification } from "@/types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { certifications } from "@/lib/data/certifications"
+import { certifications as staticCertifications } from "@/lib/data/certifications"
 
 function formatFrenchDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("fr-FR", {
@@ -27,7 +28,7 @@ const iconColors = [
   "text-teal-500 bg-teal-500/10",
 ]
 
-export default function Certifications() {
+export default function Certifications({ certifications = staticCertifications }: { certifications?: Certification[] }) {
   return (
     <section
       id="certifications"

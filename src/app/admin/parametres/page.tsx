@@ -102,7 +102,10 @@ export default function AdminParametres() {
       const data = await res.json();
       await fetch("/api/config", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("admin_token")}`,
+        },
         body: JSON.stringify({ logo: data.url }),
       });
       setLogoUrl(data.url);
@@ -126,7 +129,10 @@ export default function AdminParametres() {
       const data = await res.json();
       await fetch("/api/config", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("admin_token")}`,
+        },
         body: JSON.stringify({ favicon: data.url }),
       });
       setFaviconUrl(data.url);

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react"
 import { motion } from "framer-motion"
 import { MessageSquare } from "lucide-react"
 import { cn } from "@/lib/utils"
+import type { FAQ } from "@/types"
 import { Button } from "@/components/ui/button"
 import {
   Accordion,
@@ -12,7 +13,7 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion"
 import Link from "next/link"
-import { faq } from "@/lib/data/faq"
+import { faq as staticFaq } from "@/lib/data/faq"
 
 const categories = [
   { value: "all", label: "Toutes" },
@@ -43,7 +44,7 @@ function formatAnswer(answer: string) {
   })
 }
 
-export default function FAQ() {
+export default function FAQ({ faq = staticFaq }: { faq?: FAQ[] }) {
   const [activeCategory, setActiveCategory] = useState("all")
 
   const filteredFaq = useMemo(() => {

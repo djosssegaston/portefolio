@@ -4,11 +4,12 @@ import { useState, useMemo } from "react"
 import { motion } from "framer-motion"
 import { Search, ArrowRight, ExternalLink, Star } from "lucide-react"
 import { cn } from "@/lib/utils"
+import type { Project } from "@/types"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { projects } from "@/lib/data/projects"
+import { projects as staticProjects } from "@/lib/data/projects"
 
 const categoryFilters = [
   { value: "all", label: "Tous" },
@@ -40,7 +41,7 @@ function formatDate(dateStr: string) {
   })
 }
 
-export default function Projects() {
+export default function Projects({ projects = staticProjects }: { projects?: Project[] }) {
   const [searchQuery, setSearchQuery] = useState("")
   const [activeCategory, setActiveCategory] = useState("all")
 

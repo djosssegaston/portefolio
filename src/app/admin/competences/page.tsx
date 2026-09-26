@@ -28,8 +28,8 @@ import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
-import { skills as initialSkills } from "@/lib/data/skills";
 import type { Skill, SkillCategory } from "@/types";
+import { useResource } from "@/hooks/use-resource";
 
 const categoryLabels: Record<SkillCategory, string> = {
   "web-development": "Développement Web",
@@ -66,7 +66,7 @@ const emptySkill: Omit<Skill, "id"> & { id?: string } = {
 
 export default function AdminCompetences() {
   const { toast } = useToast();
-  const [skills, setSkills] = useState<Skill[]>(initialSkills);
+  const { items: skills, loading, create, update, remove } = useResource<Skill>("skills");
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -113,27 +113,24 @@ export default function AdminCompetences() {
     setDeleteDialogOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editingId) {
-      setSkills((prev) =>
-        prev.map((s) => (s.id === editingId ? ({ ...form, id: editingId } as Skill) : s))
-      );
+      const saved = await update(editingId, form);
+      if (!saved) return;
       toast({ title: "Compétence modifiée", description: "La compétence a été mise à jour." });
     } else {
-      const newSkill: Skill = {
-        ...form,
-        id: form.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
-      } as Skill;
-      setSkills((prev) => [...prev, newSkill]);
+      const created = await create(form);
+      if (!created) return;
       toast({ title: "Compétence ajoutée", description: "La nouvelle compétence a été créée." });
     }
     setDialogOpen(false);
     resetForm();
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deletingId) {
-      setSkills((prev) => prev.filter((s) => s.id !== deletingId));
+      const ok = await remove(deletingId);
+      if (!ok) return;
       toast({
         title: "Compétence supprimée",
         description: "La compétence a été supprimée.",
@@ -165,7 +162,11 @@ export default function AdminCompetences() {
             Gestion des Compétences
           </h1>
           <p className="text-muted-foreground mt-1">
-            {skills.length} compétence{skills.length > 1 ? "s" : ""} enregistrée{skills.length > 1 ? "s" : ""}
+            {loading
+              ? "Chargement..."
+              : `${skills.length} compétence${skills.length > 1 ? "s" : ""} enregistrée${
+                  skills.length > 1 ? "s" : ""
+                }`}
           </p>
         </div>
         <Button onClick={openNew} className="gap-2 shrink-0">
@@ -384,7 +385,7 @@ export default function AdminCompetences() {
             <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>
               Annuler
             </Button>
-            <Button onClick={handleSave}>
+            <Button onClick={handleSave} disabled={loading}>
               {editingId ? "Modifier" : "Ajouter"}
             </Button>
           </div>

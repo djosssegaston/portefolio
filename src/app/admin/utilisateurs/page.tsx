@@ -37,6 +37,7 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/toast";
+import { useResource } from "@/hooks/use-resource";
 import { cn } from "@/lib/utils";
 import type { AdminUser } from "@/types";
 
@@ -59,7 +60,7 @@ const roleConfig: Record<
   AdminUser["role"],
   { label: string; variant: "default" | "secondary" | "destructive" | "outline"; color: string }
 > = {
-  "super-admin": {
+  "super_admin": {
     label: "Super Admin",
     variant: "destructive",
     color: "bg-red-50 text-red-700 border-red-200",
@@ -76,49 +77,6 @@ const roleConfig: Record<
   },
 };
 
-const initialUsers: (AdminUser & { active: boolean; password?: string })[] = [
-  {
-    id: "1",
-    name: "DJOSSE Adechina Gaston",
-    email: "adechina@example.com",
-    avatar: "/images/avatar.jpg",
-    role: "super-admin",
-    permissions: allPermissions,
-    active: true,
-    password: "password123",
-  },
-  {
-    id: "2",
-    name: "Marie Koffi",
-    email: "marie@example.com",
-    avatar: "",
-    role: "admin",
-    permissions: ["users.read", "projects.read", "projects.write", "blog.read", "blog.write", "analytics.read", "settings.read"],
-    active: true,
-    password: "password123",
-  },
-  {
-    id: "3",
-    name: "Jean Mensah",
-    email: "jean@example.com",
-    avatar: "",
-    role: "editor",
-    permissions: ["projects.read", "projects.write", "blog.read", "blog.write"],
-    active: false,
-    password: "password123",
-  },
-  {
-    id: "4",
-    name: "Ama Tano",
-    email: "ama@example.com",
-    avatar: "",
-    role: "editor",
-    permissions: ["blog.read", "blog.write"],
-    active: true,
-    password: "password123",
-  },
-];
-
 const emptyForm = {
   name: "",
   email: "",
@@ -130,7 +88,7 @@ const emptyForm = {
 
 export default function AdminUtilisateurs() {
   const { toast } = useToast();
-  const [users, setUsers] = useState(initialUsers);
+  const { items: users, loading, create, update, remove } = useResource<AdminUser & { active: boolean }>("users");
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -153,7 +111,7 @@ export default function AdminUtilisateurs() {
     setEditingId(null);
   };
 
-  const openEdit = (user: (typeof initialUsers)[0]) => {
+  const openEdit = (user: AdminUser & { active: boolean }) => {
     setForm({
       name: user.name,
       email: user.email,
@@ -176,7 +134,7 @@ export default function AdminUtilisateurs() {
     setDeleteDialogOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name || !form.email) {
       toast({ title: "Erreur", description: "Le nom et l'email sont obligatoires.", variant: "destructive" });
       return;
@@ -186,59 +144,43 @@ export default function AdminUtilisateurs() {
       return;
     }
 
-    if (editingId) {
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.id === editingId
-            ? {
-                ...u,
-                ...form,
-                id: editingId,
-                avatar: u.avatar,
-              }
-            : u
-        )
-      );
-      toast({ title: "Utilisateur modifié", description: "L'utilisateur a été mis à jour avec succès." });
-    } else {
-      const newUser = {
-        id: `user-${Date.now()}`,
-        ...form,
-        avatar: "",
-      };
-      setUsers((prev) => [newUser, ...prev]);
-      toast({ title: "Utilisateur créé", description: "Le nouvel utilisateur a été ajouté avec succès." });
-    }
+    const saved = editingId ? await update(editingId, form) : await create(form);
+    if (!saved) return;
+    toast(
+      editingId
+        ? { title: "Utilisateur modifié", description: "L'utilisateur a été mis à jour avec succès." }
+        : { title: "Utilisateur créé", description: "Le nouvel utilisateur a été ajouté avec succès." }
+    );
     setDialogOpen(false);
     resetForm();
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deletingId) {
-      const isSuperAdmin = users.find((u) => u.id === deletingId)?.role === "super-admin";
+      const isSuperAdmin = users.find((u) => u.id === deletingId)?.role === "super_admin";
       if (isSuperAdmin) {
         toast({ title: "Action impossible", description: "Le Super Admin ne peut pas être supprimé.", variant: "destructive" });
         setDeleteDialogOpen(false);
         setDeletingId(null);
         return;
       }
-      setUsers((prev) => prev.filter((u) => u.id !== deletingId));
+      const ok = await remove(deletingId);
+      if (!ok) return;
       toast({ title: "Utilisateur supprimé", description: "L'utilisateur a été supprimé définitivement.", variant: "destructive" });
     }
     setDeleteDialogOpen(false);
     setDeletingId(null);
   };
 
-  const toggleActive = (id: string) => {
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === id ? { ...u, active: !u.active } : u
-      )
-    );
+  const toggleActive = async (id: string) => {
     const user = users.find((u) => u.id === id);
+    if (!user) return;
+    const nextActive = !user.active;
+    const saved = await update(id, { active: nextActive });
+    if (!saved) return;
     toast({
-      title: user?.active ? "Utilisateur désactivé" : "Utilisateur activé",
-      description: user?.name,
+      title: nextActive ? "Utilisateur activé" : "Utilisateur désactivé",
+      description: user.name,
     });
   };
 
@@ -265,7 +207,7 @@ export default function AdminUtilisateurs() {
   };
 
   const RoleIcon = (role: AdminUser["role"]) => {
-    if (role === "super-admin") return ShieldAlert;
+    if (role === "super_admin") return ShieldAlert;
     if (role === "admin") return ShieldCheck;
     return Shield;
   };
@@ -278,7 +220,9 @@ export default function AdminUtilisateurs() {
             Gestion des Utilisateurs
           </h1>
           <p className="text-muted-foreground mt-1">
-            {users.length} utilisateur{users.length > 1 ? "s" : ""} enregistré{users.length > 1 ? "s" : ""}
+            {loading
+              ? "Chargement..."
+              : `${users.length} utilisateur${users.length > 1 ? "s" : ""} enregistré${users.length > 1 ? "s" : ""}`}
           </p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -338,7 +282,7 @@ export default function AdminUtilisateurs() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="super-admin">Super Admin</SelectItem>
+                    <SelectItem value="super_admin">Super Admin</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="editor">Éditeur</SelectItem>
                   </SelectContent>
@@ -367,7 +311,7 @@ export default function AdminUtilisateurs() {
               <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>
                 Annuler
               </Button>
-              <Button onClick={handleSave}>
+              <Button onClick={handleSave} disabled={loading}>
                 {editingId ? "Modifier" : "Créer l'utilisateur"}
               </Button>
             </div>
@@ -476,7 +420,7 @@ export default function AdminUtilisateurs() {
                               <Switch
                                 checked={user.active}
                                 onCheckedChange={() => toggleActive(user.id)}
-                                disabled={user.role === "super-admin"}
+                                disabled={user.role === "super_admin"}
                               />
                               <span className="text-xs text-muted-foreground hidden sm:inline">
                                 {user.active ? "Actif" : "Inactif"}
@@ -497,7 +441,7 @@ export default function AdminUtilisateurs() {
                               size="icon"
                               className="w-8 h-8 hover:text-destructive"
                               onClick={() => openDelete(user.id)}
-                              disabled={user.role === "super-admin"}
+                              disabled={user.role === "super_admin"}
                             >
                               <Trash2 className="w-4 h-4 text-muted-foreground" />
                             </Button>

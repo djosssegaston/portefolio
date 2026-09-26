@@ -4,14 +4,15 @@ import { motion } from "framer-motion"
 import * as LucideIcons from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { ArrowRight } from "lucide-react"
-import { services } from "@/lib/data/services"
+import { services as staticServices } from "@/lib/data/services"
+import type { Service } from "@/types"
 
 function getIcon(iconName: string) {
   const Icon = (LucideIcons as unknown as Record<string, React.ElementType>)[iconName]
   return Icon || LucideIcons.HelpCircle
 }
 
-function ServiceCard({ service, index }: { service: (typeof services)[0]; index: number }) {
+function ServiceCard({ service, index }: { service: Service; index: number }) {
   const Icon = getIcon(service.icon)
 
   return (
@@ -69,7 +70,7 @@ function ServiceCard({ service, index }: { service: (typeof services)[0]; index:
   )
 }
 
-export default function Services() {
+export default function Services({ services = staticServices }: { services?: Service[] }) {
   return (
     <section
       id="services"

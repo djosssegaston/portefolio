@@ -30,8 +30,8 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
-import { education as initialEducation } from "@/lib/data/education";
 import type { Education } from "@/types";
+import { useResource } from "@/hooks/use-resource";
 
 const emptyEducation: Omit<Education, "id"> & { id?: string } = {
   id: "",
@@ -47,7 +47,7 @@ const emptyEducation: Omit<Education, "id"> & { id?: string } = {
 
 export default function AdminFormations() {
   const { toast } = useToast();
-  const [education, setEducation] = useState<Education[]>(initialEducation);
+  const { items: education, loading, create, update, remove } = useResource<Education>("education");
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -89,31 +89,28 @@ export default function AdminFormations() {
     setDeleteDialogOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const payload = {
       ...form,
       endDate: form.current ? undefined : form.endDate || undefined,
     };
     if (editingId) {
-      setEducation((prev) =>
-        prev.map((e) => (e.id === editingId ? ({ ...payload, id: editingId } as Education) : e))
-      );
+      const saved = await update(editingId, payload);
+      if (!saved) return;
       toast({ title: "Formation modifiée", description: "La formation a été mise à jour avec succès." });
     } else {
-      const newEdu: Education = {
-        ...payload,
-        id: `edu-${Date.now()}`,
-      } as Education;
-      setEducation((prev) => [newEdu, ...prev]);
+      const created = await create(payload);
+      if (!created) return;
       toast({ title: "Formation ajoutée", description: "La nouvelle formation a été créée avec succès." });
     }
     setDialogOpen(false);
     resetForm();
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deletingId) {
-      setEducation((prev) => prev.filter((e) => e.id !== deletingId));
+      const ok = await remove(deletingId);
+      if (!ok) return;
       toast({ title: "Formation supprimée", description: "La formation a été supprimée.", variant: "destructive" });
     }
     setDeleteDialogOpen(false);
@@ -153,7 +150,7 @@ export default function AdminFormations() {
             Gestion des Formations
           </h1>
           <p className="text-muted-foreground mt-1">
-            {education.length} formation{education.length > 1 ? "s" : ""} au total
+            {loading ? "Chargement..." : `${education.length} formation${education.length > 1 ? "s" : ""} au total`}
           </p>
         </div>
         <Button onClick={openNew} className="gap-2 shrink-0">
@@ -354,7 +351,7 @@ export default function AdminFormations() {
           </div>
           <div className="flex justify-end gap-3">
             <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>Annuler</Button>
-            <Button onClick={handleSave}>{editingId ? "Modifier" : "Ajouter"}</Button>
+            <Button onClick={handleSave} disabled={loading}>{editingId ? "Modifier" : "Ajouter"}</Button>
           </div>
         </DialogContent>
       </Dialog>

@@ -3,8 +3,9 @@
 import { motion } from "framer-motion"
 import { CheckCircle2, MapPin, Briefcase } from "lucide-react"
 import { cn } from "@/lib/utils"
+import type { Experience } from "@/types"
 import { Badge } from "@/components/ui/badge"
-import { experiences } from "@/lib/data/experiences"
+import { experiences as staticExperiences } from "@/lib/data/experiences"
 
 const companyColors = [
   "bg-blue-500",
@@ -23,7 +24,7 @@ function formatFrenchDate(dateStr: string) {
   })
 }
 
-export default function Experience() {
+export default function Experience({ experiences = staticExperiences }: { experiences?: Experience[] }) {
   return (
     <section
       id="experience"

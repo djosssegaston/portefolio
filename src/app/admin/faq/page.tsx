@@ -36,8 +36,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
-import { faq as initialFaq } from "@/lib/data/faq";
 import type { FAQ } from "@/types";
+import { useResource } from "@/hooks/use-resource";
 
 const categories = [
   "Général",
@@ -56,7 +56,7 @@ const emptyFaq: Omit<FAQ, "id"> & { id?: string } = {
 
 export default function AdminFAQ() {
   const { toast } = useToast();
-  const [faq, setFaq] = useState<FAQ[]>(initialFaq);
+  const { items: faq, loading, create, update, remove } = useResource<FAQ>("faq");
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -107,7 +107,7 @@ export default function AdminFAQ() {
     setDeleteDialogOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.question.trim() || !form.answer.trim()) {
       toast({
         title: "Champs requis",
@@ -117,27 +117,22 @@ export default function AdminFAQ() {
       return;
     }
     if (editingId) {
-      setFaq((prev) =>
-        prev.map((item) =>
-          item.id === editingId ? { ...form, id: editingId } as FAQ : item
-        )
-      );
+      const saved = await update(editingId, form);
+      if (!saved) return;
       toast({ title: "Question modifiée", description: "La FAQ a été mise à jour." });
     } else {
-      const newItem: FAQ = {
-        ...form,
-        id: `faq-${Date.now()}`,
-      } as FAQ;
-      setFaq((prev) => [...prev, newItem]);
+      const created = await create(form);
+      if (!created) return;
       toast({ title: "Question ajoutée", description: "La nouvelle question a été ajoutée." });
     }
     setDialogOpen(false);
     resetForm();
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deletingId) {
-      setFaq((prev) => prev.filter((item) => item.id !== deletingId));
+      const ok = await remove(deletingId);
+      if (!ok) return;
       toast({
         title: "Question supprimée",
         description: "La question a été supprimée de la FAQ.",
@@ -148,30 +143,26 @@ export default function AdminFAQ() {
     setDeletingId(null);
   };
 
-  const moveUp = (id: string) => {
-    setFaq((prev) => {
-      const idx = prev.findIndex((item) => item.id === id);
-      if (idx <= 0) return prev;
-      const updated = [...prev];
-      const temp = updated[idx].order;
-      updated[idx] = { ...updated[idx], order: updated[idx - 1].order };
-      updated[idx - 1] = { ...updated[idx - 1], order: temp };
-      updated.sort((a, b) => a.order - b.order);
-      return updated;
-    });
+  const moveUp = async (id: string) => {
+    const idx = faq.findIndex((item) => item.id === id);
+    if (idx <= 0) return;
+    const current = faq[idx];
+    const previous = faq[idx - 1];
+    const first = await update(current.id, { order: previous.order });
+    if (!first) return;
+    const second = await update(previous.id, { order: current.order });
+    if (!second) return;
   };
 
-  const moveDown = (id: string) => {
-    setFaq((prev) => {
-      const idx = prev.findIndex((item) => item.id === id);
-      if (idx < 0 || idx >= prev.length - 1) return prev;
-      const updated = [...prev];
-      const temp = updated[idx].order;
-      updated[idx] = { ...updated[idx], order: updated[idx + 1].order };
-      updated[idx + 1] = { ...updated[idx + 1], order: temp };
-      updated.sort((a, b) => a.order - b.order);
-      return updated;
-    });
+  const moveDown = async (id: string) => {
+    const idx = faq.findIndex((item) => item.id === id);
+    if (idx < 0 || idx >= faq.length - 1) return;
+    const current = faq[idx];
+    const next = faq[idx + 1];
+    const first = await update(current.id, { order: next.order });
+    if (!first) return;
+    const second = await update(next.id, { order: current.order });
+    if (!second) return;
   };
 
   const handleFormChange = (field: string, value: string | number) => {
@@ -199,7 +190,7 @@ export default function AdminFAQ() {
             Gestion de la FAQ
           </h1>
           <p className="text-muted-foreground mt-1">
-            {faq.length} question{faq.length > 1 ? "s" : ""}
+            {loading ? "Chargement..." : `${faq.length} question${faq.length > 1 ? "s" : ""}`}
           </p>
         </div>
         <Button onClick={openNew} className="gap-2 shrink-0">
@@ -454,7 +445,7 @@ export default function AdminFAQ() {
             <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>
               Annuler
             </Button>
-            <Button onClick={handleSave}>
+            <Button onClick={handleSave} disabled={loading}>
               <Save className="w-4 h-4 mr-1.5" />
               {editingId ? "Modifier" : "Ajouter"}
             </Button>

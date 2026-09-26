@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -19,6 +19,8 @@ import {
   Phone,
   ExternalLink,
   Clock,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,143 +34,107 @@ import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import type { ContactMessage } from "@/types";
 
-const mockMessages: ContactMessage[] = [
-  {
-    id: "msg-01",
-    name: "Sophie Martin",
-    email: "sophie.martin@email.com",
-    phone: "+33 6 12 34 56 78",
-    subject: "Demande de devis pour site e-commerce",
-    message:
-      "Bonjour, je suis à la recherche d'un développeur pour créer une boutique en ligne. Notre entreprise souhaite vendre nos produits artisanaux sur internet. Nous avons besoin d'une plateforme complète avec gestion des stocks, paiement en ligne et dashboard admin. Pouvez-vous me faire un devis ? Cordialement, Sophie Martin",
-    date: "2024-06-15T10:30:00",
-    read: false,
-    archived: false,
-    replied: false,
-  },
-  {
-    id: "msg-02",
-    name: "Marc Dupont",
-    email: "marc.dupont@entreprise.com",
-    subject: "Proposition de collaboration",
-    message:
-      "Bonjour Adechina, Je suis le fondateur d'une startup dans la EdTech et nous cherchons un CTO technique pour nous accompagner. Votre profil correspond exactement à ce que nous recherchons. Seriez-vous disponible pour un appel découverte cette semaine ? Bien cordialement, Marc Dupont",
-    date: "2024-06-14T14:15:00",
-    read: true,
-    archived: false,
-    replied: false,
-  },
-  {
-    id: "msg-03",
-    name: "Aïcha Diallo",
-    email: "aicha.diallo@agency.sn",
-    phone: "+221 77 123 45 67",
-    subject: "Mission développement application mobile",
-    message:
-      "Bonjour, Notre agence recherche un consultant pour le développement d'une application mobile cross-platform (React Native). Le projet est prévu pour démarrer en septembre. Souhaitez-vous que nous organisions un call pour discuter des détails techniques et du budget ? Merci d'avance.",
-    date: "2024-06-13T09:45:00",
-    read: true,
-    archived: false,
-    replied: true,
-  },
-  {
-    id: "msg-04",
-    name: "Thomas Bernard",
-    email: "thomas.bernard@webcorp.fr",
-    subject: "Merci pour la formation React",
-    message:
-      "Merci infiniment pour la formation React avancée que vous avez dispensée à notre équipe. Les retours sont excellents et nous avons déjà pu appliquer les bonnes pratiques que vous nous avez enseignées. Nous recommandons vivement vos services !",
-    date: "2024-06-12T16:20:00",
-    read: true,
-    archived: true,
-    replied: false,
-  },
-  {
-    id: "msg-05",
-    name: "Fatou Ndiaye",
-    email: "fatou.ndiaye@startup.sn",
-    subject: "Audit technique plateforme existante",
-    message:
-      "Bonjour Monsieur, Nous souhaiterions solliciter vos services pour un audit complet de notre plateforme SaaS actuelle. Nous rencontrons des problèmes de performance et de scalabilité. Pourriez-vous nous indiquer vos disponibilités et tarifs pour ce type de prestation ? Dans l'attente de votre retour.",
-    date: "2024-06-11T11:00:00",
-    read: false,
-    archived: false,
-    replied: false,
-  },
-  {
-    id: "msg-06",
-    name: "Jean-Pierre Koffi",
-    email: "jp.koffi@africatech.ci",
-    phone: "+225 01 02 03 04 05",
-    subject: "Partenariat digital pour le marché ivoirien",
-    message:
-      "Bonjour Adechina, Je suis le directeur technique d'AfricaTech et nous souhaitons établir un partenariat avec vous pour nos projets digitaux en Côte d'Ivoire. Nous avons plusieurs gros projets en pipeline et votre expertise nous serait précieuse. Pouvons-nous planifier une réunion virtuelle cette semaine ?",
-    date: "2024-06-10T08:30:00",
-    read: false,
-    archived: false,
-    replied: false,
-  },
-  {
-    id: "msg-07",
-    name: "Émilie Rousseau",
-    email: "emilie.rousseau@designstudio.fr",
-    subject: "Refonte de site vitrine",
-    message:
-      "Bonjour, Notre studio de design souhaite refaire complètement son site vitrine. Nous aimerions un site moderne avec animations, portfolio interactif et blog. J'ai vu vos réalisations et je suis impressionnée par la qualité. Pourriez-vous me contacter pour qu'on en discute ? Belle journée !",
-    date: "2024-06-09T13:45:00",
-    read: true,
-    archived: false,
-    replied: true,
-  },
-  {
-    id: "msg-08",
-    name: "Dr. Amadou Touré",
-    email: "amadou.toure@institut.edu",
-    subject: "Demande de logiciel de gestion scolaire",
-    message:
-      "Bonjour Monsieur DJOSSE, Je dirige un institut de formation qui a besoin d'un logiciel de gestion scolaire complet : inscriptions, notes, emplois du temps, paiements. Avez-vous déjà développé ce type de solution ? Nous sommes basés à Bamako mais ouverts au 100% télétravail. Merci.",
-    date: "2024-06-08T15:10:00",
-    read: true,
-    archived: false,
-    replied: false,
-  },
-  {
-    id: "msg-09",
-    name: "Claire Lefebvre",
-    email: "claire.lefebvre@digitalagency.fr",
-    subject: "Développement API REST",
-    message:
-      "Bonjour, Nous cherchons un développeur backend expérimenté en Node.js pour la conception d'une API REST destinée à notre nouvelle plateforme. Le projet est estimé à environ 3 mois. Votre expertise en architecture de microservices nous intéresse particulièrement. Pouvez-vous me rappeler ?",
-    date: "2024-06-07T10:00:00",
-    read: true,
-    archived: true,
-    replied: false,
-  },
-  {
-    id: "msg-10",
-    name: "Mamadou Sall",
-    email: "mamadou.sall@techsen.com",
-    subject: "Demande d'information formation",
-    message:
-      "Bonjour, Je suis intéressé par vos formations en développement web. Je suis basé à Dakar et je souhaiterais suivre une formation en React/Next.js en ligne. Quels sont les tarifs et le programme détaillé ? Y a-t-il des certifications à la clé ? Merci d'avance pour votre réponse.",
-    date: "2024-06-06T09:30:00",
-    read: true,
-    archived: false,
-    replied: false,
-  },
-];
+function authHeaders(): Record<string, string> {
+  const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+type BulkAction = "read" | "unread" | "archive" | "unarchive" | "replied" | "delete";
+
+async function readJson(res: Response) {
+  return res.json().catch(() => ({}));
+}
+
+async function readMessages(view: "inbox" | "archived"): Promise<ContactMessage[]> {
+  const res = await fetch(`/api/messages?view=${view}`, {
+    headers: authHeaders(),
+    cache: "no-store",
+  });
+  const payload = await readJson(res);
+  if (!res.ok) throw new Error(payload?.error ?? "Erreur de chargement");
+  return Array.isArray(payload?.data) ? (payload.data as ContactMessage[]) : [];
+}
+
+async function patchMessage(
+  id: string,
+  body: { read?: boolean; archived?: boolean; replied?: boolean }
+): Promise<ContactMessage> {
+  const res = await fetch(`/api/messages/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify(body),
+  });
+  const payload = await readJson(res);
+  if (!res.ok) throw new Error(payload?.error ?? "Erreur serveur");
+  return payload.data as ContactMessage;
+}
+
+async function bulkAction(ids: string[], action: BulkAction): Promise<ContactMessage[]> {
+  const res = await fetch("/api/messages", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify({ ids, action }),
+  });
+  const payload = await readJson(res);
+  if (!res.ok) throw new Error(payload?.error ?? "Erreur serveur");
+  return Array.isArray(payload?.data) ? (payload.data as ContactMessage[]) : [];
+}
+
+async function deleteMessage(id: string): Promise<void> {
+  const res = await fetch(`/api/messages/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  const payload = await readJson(res);
+  if (!res.ok) throw new Error(payload?.error ?? "Erreur serveur");
+}
 
 type FilterType = "all" | "unread" | "archived";
 
 export default function AdminMessages() {
   const { toast } = useToast();
-  const [messages, setMessages] = useState<ContactMessage[]>(mockMessages);
+  const [inbox, setInbox] = useState<ContactMessage[]>([]);
+  const [archived, setArchived] = useState<ContactMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterType>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [mobileDetail, setMobileDetail] = useState(false);
+
+  const load = useCallback(async () => {
+    setError(null);
+    try {
+      const [inboxResult, archivedResult] = await Promise.allSettled([
+        readMessages("inbox"),
+        readMessages("archived"),
+      ]);
+      if (inboxResult.status === "fulfilled") {
+        setInbox(inboxResult.value);
+      } else {
+        setInbox([]);
+        throw inboxResult.reason;
+      }
+      if (archivedResult.status === "fulfilled") {
+        setArchived(archivedResult.value);
+      } else {
+        setArchived([]);
+      }
+    } catch (e: any) {
+      setError(e?.message ?? "Impossible de charger les messages");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const messages = filter === "archived" ? archived : inbox;
 
   const filtered = useMemo(() => {
     return messages.filter((m) => {
@@ -186,17 +152,20 @@ export default function AdminMessages() {
   }, [messages, search, filter]);
 
   const selected = useMemo(
-    () => messages.find((m) => m.id === selectedId) || null,
-    [messages, selectedId]
+    () =>
+      inbox.find((m) => m.id === selectedId) ||
+      archived.find((m) => m.id === selectedId) ||
+      null,
+    [inbox, archived, selectedId]
   );
 
   const counts = useMemo(
     () => ({
-      all: messages.length,
-      unread: messages.filter((m) => !m.read).length,
-      archived: messages.filter((m) => m.archived).length,
+      all: inbox.length,
+      unread: inbox.filter((m) => !m.read).length,
+      archived: archived.length,
     }),
-    [messages]
+    [inbox, archived]
   );
 
   const handleSelect = (id: string) => {
@@ -211,61 +180,102 @@ export default function AdminMessages() {
     setSelectedId(null);
   };
 
-  const handleToggleRead = () => {
-    if (!selected) return;
-    setMessages((prev) =>
-      prev.map((m) => (m.id === selected.id ? { ...m, read: !m.read } : m))
-    );
+  const fail = (e: any) => {
     toast({
-      title: selected.read ? "Marqué comme non lu" : "Marqué comme lu",
-      description: selected.read
-        ? "Le message est maintenant non lu."
-        : "Le message a été marqué comme lu.",
-    });
-  };
-
-  const handleArchive = () => {
-    if (!selected) return;
-    setMessages((prev) =>
-      prev.map((m) =>
-        m.id === selected.id ? { ...m, archived: !m.archived } : m
-      )
-    );
-    toast({
-      title: selected.archived ? "Message désarchivé" : "Message archivé",
-      description: selected.archived
-        ? "Le message a été retiré des archives."
-        : "Le message a été archivé.",
-    });
-    setSelectedId(null);
-    setMobileDetail(false);
-  };
-
-  const handleDelete = () => {
-    if (!selected) return;
-    setMessages((prev) => prev.filter((m) => m.id !== selected.id));
-    toast({
-      title: "Message supprimé",
-      description: "Le message a été supprimé définitivement.",
+      title: "Échec de l'opération",
+      description: e?.message ?? "Erreur serveur",
       variant: "destructive",
     });
-    setSelectedId(null);
-    setMobileDetail(false);
   };
 
-  const handleReply = () => {
-    if (!selected || !replyText.trim()) return;
-    setMessages((prev) =>
-      prev.map((m) =>
-        m.id === selected.id ? { ...m, replied: true, read: true } : m
-      )
+  const handleToggleRead = async () => {
+    if (!selected || busy) return;
+    const next = !selected.read;
+    setBusy(true);
+    setInbox((prev) => prev.map((m) => (m.id === selected.id ? { ...m, read: next } : m)));
+    setArchived((prev) =>
+      prev.map((m) => (m.id === selected.id ? { ...m, read: next } : m))
     );
-    toast({
-      title: "Réponse envoyée",
-      description: `Votre réponse à ${selected.name} a été envoyée.`,
-    });
-    setReplyText("");
-    setReplyingTo(null);
+    try {
+      await patchMessage(selected.id, { read: next });
+      toast({
+        title: next ? "Marqué comme lu" : "Marqué comme non lu",
+        description: next
+          ? "Le message a été marqué comme lu."
+          : "Le message est maintenant non lu.",
+      });
+      await load();
+    } catch (e: any) {
+      setInbox((prev) =>
+        prev.map((m) => (m.id === selected.id ? { ...m, read: !next } : m))
+      );
+      setArchived((prev) =>
+        prev.map((m) => (m.id === selected.id ? { ...m, read: !next } : m))
+      );
+      fail(e);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleArchive = async () => {
+    if (!selected || busy) return;
+    setBusy(true);
+    try {
+      await bulkAction([selected.id], selected.archived ? "unarchive" : "archive");
+      toast({
+        title: selected.archived ? "Message désarchivé" : "Message archivé",
+        description: selected.archived
+          ? "Le message a été retiré des archives."
+          : "Le message a été archivé.",
+      });
+      setSelectedId(null);
+      setMobileDetail(false);
+      await load();
+    } catch (e: any) {
+      fail(e);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selected || busy) return;
+    setBusy(true);
+    try {
+      await deleteMessage(selected.id);
+      toast({
+        title: "Message supprimé",
+        description: "Le message a été supprimé définitivement.",
+        variant: "destructive",
+      });
+      setSelectedId(null);
+      setMobileDetail(false);
+      await load();
+    } catch (e: any) {
+      fail(e);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleReply = async () => {
+    if (!selected || busy || !replyText.trim()) return;
+    setBusy(true);
+    try {
+      await bulkAction([selected.id], "replied");
+      toast({
+        title: "Réponse envoyée",
+        description: `Votre réponse à ${selected.name} a été envoyée.`,
+      });
+      setReplyText("");
+      setReplyingTo(null);
+      await load();
+    } catch (e: any) {
+      fail(e);
+    } finally {
+      setBusy(false);
+    }
   };
 
   const formatDate = (dateStr: string) => {
@@ -309,7 +319,9 @@ export default function AdminMessages() {
             Boîte de Réception
           </h1>
           <p className="text-muted-foreground mt-1">
-            {messages.length} message{messages.length > 1 ? "s" : ""}
+            {loading
+              ? "Chargement des messages..."
+              : `${messages.length} message${messages.length > 1 ? "s" : ""}`}
           </p>
         </div>
       </motion.div>
@@ -329,6 +341,27 @@ export default function AdminMessages() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {error && (
+        <motion.div variants={item}>
+          <div className="flex items-center gap-3 p-3 rounded-lg border border-destructive/30 bg-destructive/5">
+            <AlertCircle className="w-4 h-4 text-destructive shrink-0" />
+            <p className="text-sm text-destructive flex-1">{error}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs gap-1.5"
+              onClick={() => {
+                setLoading(true);
+                load();
+              }}
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Réessayer
+            </Button>
+          </div>
+        </motion.div>
+      )}
 
       <div className="grid grid-cols-1 xl:grid-cols-[220px_1fr_380px] lg:grid-cols-[200px_1fr] gap-4">
         {/* Left sidebar - Filters */}
@@ -372,7 +405,16 @@ export default function AdminMessages() {
             <ScrollArea className="h-full">
               <div className="divide-y divide-border">
                 <AnimatePresence>
-                  {filtered.length === 0 ? (
+                  {loading ? (
+                    <div className="flex flex-col items-center justify-center py-16 gap-3">
+                      <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                        <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Chargement des messages...
+                      </p>
+                    </div>
+                  ) : filtered.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-16 gap-3">
                       <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
                         <AlertCircle className="w-8 h-8 text-muted-foreground" />
@@ -381,9 +423,11 @@ export default function AdminMessages() {
                         Aucun message trouvé
                       </p>
                       <p className="text-sm text-muted-foreground text-center max-w-sm">
-                        {search
-                          ? "Essayez de modifier votre recherche."
-                          : "Aucun message dans cette catégorie."}
+                        {error
+                          ? error
+                          : search
+                            ? "Essayez de modifier votre recherche."
+                            : "Aucun message dans cette catégorie."}
                       </p>
                     </div>
                   ) : (
@@ -560,6 +604,7 @@ export default function AdminMessages() {
                         size="sm"
                         className="h-8 text-xs gap-1.5"
                         onClick={handleToggleRead}
+                        disabled={busy}
                       >
                         {selected.read ? (
                           <>
@@ -578,6 +623,7 @@ export default function AdminMessages() {
                         size="sm"
                         className="h-8 text-xs gap-1.5"
                         onClick={handleArchive}
+                        disabled={busy}
                       >
                         <ArchiveIcon className="w-3.5 h-3.5" />
                         {selected.archived ? "Désarchiver" : "Archiver"}
@@ -587,6 +633,7 @@ export default function AdminMessages() {
                         size="sm"
                         className="h-8 text-xs gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10"
                         onClick={handleDelete}
+                        disabled={busy}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                         Supprimer
@@ -638,7 +685,7 @@ export default function AdminMessages() {
                                 size="sm"
                                 className="h-8 text-xs gap-1.5"
                                 onClick={handleReply}
-                                disabled={!replyText.trim()}
+                                disabled={busy || !replyText.trim()}
                               >
                                 <Send className="w-3.5 h-3.5" />
                                 Envoyer

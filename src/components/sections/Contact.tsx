@@ -80,16 +80,39 @@ export default function Contact() {
     },
   })
 
-  function onSubmit(data: ContactFormData) {
+  async function onSubmit(data: ContactFormData) {
     setIsSubmitting(true)
-    setTimeout(() => {
-      setIsSubmitting(false)
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+      const payload = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        toast({
+          title: "Message non envoyé",
+          description: payload?.error ?? "Une erreur est survenue. Merci de réessayer.",
+          variant: "destructive",
+        })
+        return
+      }
+
       toast({
         title: "Message envoyé avec succès !",
         description: "Je vous répondrai dans les plus brefs délais.",
       })
       reset()
-    }, 1000)
+    } catch {
+      toast({
+        title: "Message non envoyé",
+        description: "Vérifiez votre connexion internet et réessayez.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
