@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
 import {
   Users,
   Eye,
@@ -153,18 +152,7 @@ const barData = (data: { label: string; value: number }[], color: string) => ({
   ],
 });
 
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.06 },
-  },
-};
 
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.35 } },
-};
 
 export default function AdminAnalytique() {
   const [dateRange, setDateRange] = useState(365);
@@ -177,8 +165,8 @@ export default function AdminAnalytique() {
   ];
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-      <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-heading font-bold text-foreground">
             Analytique
@@ -200,9 +188,9 @@ export default function AdminAnalytique() {
             </Button>
           ))}
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
@@ -219,9 +207,9 @@ export default function AdminAnalytique() {
             </Card>
           );
         })}
-      </motion.div>
+      </div>
 
-      <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="pb-0">
             <CardTitle className="text-base flex items-center gap-2">
@@ -313,9 +301,9 @@ export default function AdminAnalytique() {
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
 
-      <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
@@ -376,7 +364,7 @@ export default function AdminAnalytique() {
             </div>
           </CardContent>
         </Card>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }

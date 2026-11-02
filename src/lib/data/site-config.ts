@@ -35,13 +35,13 @@ export const siteConfig: SiteConfig = {
     { name: "Email", url: "mailto:contact@djosse-adechina.com", icon: "Mail" },
   ],
   stats: [
-    { label: "Projets réalisés", value: 45, suffix: "+", icon: "Briefcase" },
+    { label: "Projets réalisés", value: 5, suffix: "+", icon: "Briefcase" },
     { label: "Technologies maîtrisées", value: 30, suffix: "+", icon: "Code2" },
-    { label: "Années d'expérience", value: 8, suffix: "+", icon: "Calendar" },
+    { label: "Années d'expérience", value: 1, suffix: "+", icon: "Calendar" },
     { label: "Clients satisfaits", value: 25, suffix: "+", icon: "Users" },
   ],
   about: {
-    presentation: `Développeur passionné et consultant digital avec plus de 8 ans d'expérience dans la création de solutions numériques innovantes. Ma mission est de transformer des idées ambitieuses en produits digitaux performants, élégants et intuitifs.
+    presentation: `Développeur passionné et consultant digital avec plus d'un an d'expérience dans la création de solutions numériques innovantes. Ma mission est de transformer des idées ambitieuses en produits digitaux performants, élégants et intuitifs.
 
 Spécialisé en développement web full-stack, architecture d'applications et stratégie digitale, j'accompagne les entreprises et entrepreneurs dans leur transformation numérique, de la conception à la réalisation.
 

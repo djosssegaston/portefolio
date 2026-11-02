@@ -1,19 +1,27 @@
-"use client"
+"use client";
 
-import { useState, useMemo } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Search, Clock, ArrowRight, Calendar, ChevronLeft, ChevronRight } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import Link from "next/link"
-import type { BlogPost } from "@/types"
-import { blogPosts as staticBlogPosts } from "@/lib/data/blog-posts"
+import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import {
+  ArrowRight,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Search,
+} from "lucide-react";
+import PageHero from "@/components/layout/PageHero";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { gsap } from "@/lib/gsap";
+import { cn } from "@/lib/utils";
+import type { BlogPost } from "@/types";
+import { blogPosts as staticBlogPosts } from "@/lib/data/blog-posts";
 
-const POSTS_PER_PAGE = 6
+const POSTS_PER_PAGE = 6;
 
 const gradients = [
   "from-blue-600 to-indigo-600",
@@ -26,14 +34,21 @@ const gradients = [
   "from-violet-500 to-purple-600",
   "from-teal-400 to-cyan-600",
   "from-fuchsia-500 to-purple-600",
-]
+];
+
+const categoryLabels: Record<string, string> = {
+  all: "Tous",
+  Développement: "Développement",
+  Technologie: "Technologie",
+  Business: "Business",
+};
 
 function getInitials(name: string) {
   return name
     .split(" ")
-    .map((n) => n[0])
+    .map((part) => part[0])
     .join("")
-    .toUpperCase()
+    .toUpperCase();
 }
 
 function formatDate(dateStr: string) {
@@ -41,244 +56,287 @@ function formatDate(dateStr: string) {
     year: "numeric",
     month: "long",
     day: "numeric",
-  })
+  });
 }
 
-export default function BlogPage({ blogPosts = staticBlogPosts }: { blogPosts?: BlogPost[] }) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [activeCategory, setActiveCategory] = useState("all")
-  const [currentPage, setCurrentPage] = useState(1)
+export default function BlogPage({
+  blogPosts = staticBlogPosts,
+}: {
+  blogPosts?: BlogPost[];
+}) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const emptyRef = useRef<HTMLDivElement>(null);
+  const lastFilter = useRef<string | null>(null);
 
   const categories = useMemo(() => {
-    const cats = new Set(blogPosts.map((p) => p.category))
-    return ["all", ...Array.from(cats)]
-  }, [])
-
-  const categoryLabels: Record<string, string> = {
-    all: "Tous",
-    Développement: "Développement",
-    Technologie: "Technologie",
-    Business: "Business",
-  }
+    const cats = new Set(blogPosts.map((post) => post.category));
+    return ["all", ...Array.from(cats)];
+  }, [blogPosts]);
 
   const filteredPosts = useMemo(() => {
-    const query = searchQuery.toLowerCase().trim()
+    const query = searchQuery.toLowerCase().trim();
     return blogPosts.filter((post) => {
-      if (activeCategory !== "all" && post.category !== activeCategory) return false
-      if (query && !post.title.toLowerCase().includes(query) && !post.excerpt.toLowerCase().includes(query))
-        return false
-      return true
-    })
-  }, [searchQuery, activeCategory])
+      if (activeCategory !== "all" && post.category !== activeCategory) return false;
+      if (
+        query &&
+        !post.title.toLowerCase().includes(query) &&
+        !post.excerpt.toLowerCase().includes(query)
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }, [searchQuery, activeCategory, blogPosts]);
 
-  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE)
+  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
   const paginatedPosts = filteredPosts.slice(
     (currentPage - 1) * POSTS_PER_PAGE,
-    currentPage * POSTS_PER_PAGE
-  )
+    currentPage * POSTS_PER_PAGE,
+  );
+
+  useEffect(() => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // Re-animating on every keystroke makes search feel broken; only page and
+    // category changes should replay the entrance.
+    const filterKey = `${activeCategory}:${currentPage}`;
+    const filterChanged = lastFilter.current !== filterKey;
+    lastFilter.current = filterKey;
+
+    if (!filterChanged) {
+      if (emptyRef.current) gsap.set(emptyRef.current, { opacity: 1, y: 0 });
+      return;
+    }
+
+    if (reduced) {
+      if (gridRef.current) gsap.set(Array.from(gridRef.current.children), { opacity: 1, y: 0 });
+      return;
+    }
+
+    if (paginatedPosts.length > 0 && gridRef.current) {
+      gsap.fromTo(
+        Array.from(gridRef.current.children),
+        { opacity: 0, y: 24, scale: 0.99 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.55,
+          stagger: 0.045,
+          ease: "power3.out",
+          overwrite: true,
+          clearProps: "transform,opacity",
+        },
+      );
+      return;
+    }
+
+    if (emptyRef.current) {
+      gsap.fromTo(
+        emptyRef.current,
+        { opacity: 0, y: 16 },
+        { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", overwrite: true },
+      );
+    }
+  }, [paginatedPosts, currentPage, activeCategory]);
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
+    setCurrentPage(page);
+    const reduced =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+  };
 
   return (
-    <div className="pt-20">
-      <div className="bg-gradient-to-b from-primary-50/50 to-background py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-            <h1 className="font-heading text-4xl font-bold text-foreground sm:text-5xl">Blog</h1>
-            <div className="mx-auto mt-4 h-1 w-20 rounded-full bg-primary" />
-            <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-              Articles, tutoriels et réflexions sur le développement web, la technologie et l&apos;innovation
-            </p>
-          </motion.div>
+    <div>
+      <PageHero
+        eyebrow="Journal"
+        title="Idées, pratique"
+        highlight="et retours d'expérience."
+        description="Articles, tutoriels et réflexions sur le développement web, la technologie et l'innovation."
+        breadcrumb={[{ label: "Accueil", href: "/" }, { label: "Blog" }]}
+        variant="waves"
+      >
+        <div className="flex flex-wrap gap-3">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-medium text-slate-300 backdrop-blur-md">
+            {blogPosts.length} articles publiés
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-medium text-slate-300 backdrop-blur-md">
+            <Clock className="h-3.5 w-3.5 text-cyan-300" />
+            Lectures courtes et concrètes
+          </span>
         </div>
-      </div>
+      </PageHero>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="mb-8"
-        >
-          <div className="relative mx-auto max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Rechercher un article..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value)
-                setCurrentPage(1)
-              }}
-              className="pl-10"
-              aria-label="Rechercher un article"
-            />
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-          className="mb-10 flex flex-wrap justify-center gap-2"
-        >
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => {
-                setActiveCategory(cat)
-                setCurrentPage(1)
-              }}
-              className={cn(
-                "rounded-full px-5 py-2 text-sm font-medium transition-all duration-300",
-                activeCategory === cat
-                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                  : "bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground",
-              )}
-            >
-              {categoryLabels[cat] ?? cat}
-            </button>
-          ))}
-        </motion.div>
-
-        <AnimatePresence mode="wait">
-          {paginatedPosts.length > 0 ? (
-            <motion.div
-              key={activeCategory + searchQuery + currentPage}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-            >
-              {paginatedPosts.map((post, index) => (
-                <motion.div
-                  key={post.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.05 }}
-                  layout
+      <section className="section-shell !pt-16 sm:!pt-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="surface mx-auto mb-12 max-w-4xl p-4 sm:p-5" data-reveal="up">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Rechercher un article..."
+                value={searchQuery}
+                onChange={(event) => {
+                  setSearchQuery(event.target.value);
+                  setCurrentPage(1);
+                }}
+                className="h-12 rounded-xl border-border/70 bg-white pl-11 text-sm shadow-sm"
+                aria-label="Rechercher un article"
+              />
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  aria-pressed={activeCategory === category}
+                  onClick={() => {
+                    setActiveCategory(category);
+                    setCurrentPage(1);
+                  }}
+                  className={cn(
+                    "rounded-full px-4 py-2 text-sm font-medium transition-all duration-300",
+                    activeCategory === category
+                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+                      : "bg-slate-100 text-slate-500 hover:bg-slate-200/80 hover:text-slate-900",
+                  )}
                 >
-                  <Link href={`/blog/${post.slug}`} className="group block h-full">
-                    <Card className="relative h-full overflow-hidden border-border/50 transition-all duration-300 hover:-translate-y-1 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5">
-                      <div
-                        className={cn(
-                          "relative flex h-48 items-center justify-center bg-gradient-to-br",
-                          gradients[index % gradients.length],
-                        )}
-                      >
-                        <span className="select-none text-6xl font-bold text-white/20">
-                          {post.title.charAt(0)}
-                        </span>
-                        <Badge className="absolute left-3 top-3 bg-background/80 text-xs font-medium text-foreground backdrop-blur-sm hover:bg-background/90">
-                          {post.category}
-                        </Badge>
-                      </div>
-                      <CardContent className="p-5">
-                        <h3 className="font-heading text-lg font-bold text-foreground transition-colors group-hover:text-primary">
-                          {post.title}
-                        </h3>
-                        <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-                          {post.excerpt}
-                        </p>
-                        <div className="mt-4 flex items-center justify-between border-t border-border/50 pt-4">
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-7 w-7">
-                              <AvatarImage src={post.authorAvatar} alt={post.author} />
-                              <AvatarFallback className="text-[10px]">
-                                {getInitials(post.author)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-xs font-medium text-foreground">{post.author}</span>
-                          </div>
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3.5 w-3.5" />
-                              {formatDate(post.date)}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3.5 w-3.5" />
-                              {post.readTime} min
-                            </span>
-                          </div>
-                        </div>
-                        <div className="mt-3 flex items-center gap-1 text-sm font-medium text-primary opacity-0 transition-all duration-300 group-hover:opacity-100">
-                          Lire l&rsquo;article
-                          <ArrowRight className="h-4 w-4 transition-all duration-300 group-hover:translate-x-1" />
-                        </div>
-                      </CardContent>
-                      <div className="absolute inset-x-0 bottom-0 h-0.5 origin-left scale-x-0 bg-gradient-to-r from-primary to-primary-500 transition-transform duration-300 group-hover:scale-x-100" />
-                    </Card>
-                  </Link>
-                </motion.div>
+                  {categoryLabels[category] ?? category}
+                </button>
               ))}
-            </motion.div>
+            </div>
+          </div>
+
+          {paginatedPosts.length > 0 ? (
+            <div ref={gridRef} className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {paginatedPosts.map((post, index) => (
+                <Link key={post.id} href={`/blog/${post.slug}`} className="group block h-full">
+                  <Card className="relative h-full overflow-hidden border-border/50 transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/20 hover:shadow-[0_30px_70px_-45px_rgba(37,99,235,0.5)]">
+                    <div
+                      className={cn(
+                        "relative flex h-48 items-center justify-center overflow-hidden bg-gradient-to-br",
+                        gradients[index % gradients.length],
+                      )}
+                    >
+                      <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.14)_1px,transparent_1px)] [background-size:34px_34px]" />
+                      <span className="relative select-none font-heading text-7xl font-bold text-white/25 transition-transform duration-700 group-hover:scale-110">
+                        {post.title.charAt(0)}
+                      </span>
+                      <Badge className="absolute left-3 top-3 border-0 bg-white/85 text-xs font-medium text-slate-900 backdrop-blur-sm hover:bg-white">
+                        {post.category}
+                      </Badge>
+                      <div className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-white opacity-0 backdrop-blur-md transition-all duration-300 group-hover:opacity-100">
+                        <ArrowRight className="h-4 w-4" />
+                      </div>
+                    </div>
+                    <CardContent className="p-6">
+                      <h2 className="font-heading text-lg font-bold leading-snug text-foreground transition-colors group-hover:text-primary">
+                        {post.title}
+                      </h2>
+                      <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                        {post.excerpt}
+                      </p>
+                      <div className="mt-5 flex items-center justify-between border-t border-border/50 pt-4">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-7 w-7">
+                            <AvatarImage src={post.authorAvatar} alt={post.author} />
+                            <AvatarFallback className="text-[10px]">
+                              {getInitials(post.author)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-xs font-medium text-foreground">
+                            {post.author}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3.5 w-3.5" />
+                            {formatDate(post.date)}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3.5 w-3.5" />
+                            {post.readTime} min
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                    <div className="absolute inset-x-0 bottom-0 h-0.5 origin-left scale-x-0 bg-gradient-to-r from-primary to-cyan-400 transition-transform duration-500 group-hover:scale-x-100" />
+                  </Card>
+                </Link>
+              ))}
+            </div>
           ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="py-16 text-center"
-            >
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+            <div ref={emptyRef} className="py-20 text-center">
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
                 <Search className="h-6 w-6 text-muted-foreground" />
               </div>
               <p className="text-lg font-medium text-muted-foreground">Aucun article trouvé</p>
               <p className="mt-1 text-sm text-muted-foreground/70">
-                Essayez de modifier votre recherche ou filtre
+                Essayez de modifier votre recherche ou votre filtre.
               </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {totalPages > 1 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
-            className="mt-12 flex items-center justify-center gap-4"
-          >
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="gap-2"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Précédent
-            </Button>
-            <div className="flex items-center gap-2">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => handlePageChange(page)}
-                  className={cn(
-                    "h-9 w-9 rounded-md text-sm font-medium transition-all duration-200",
-                    currentPage === page
-                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                      : "bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground",
-                  )}
-                >
-                  {page}
-                </button>
-              ))}
+              <Button
+                variant="outline"
+                className="mt-6"
+                onClick={() => {
+                  setSearchQuery("");
+                  setActiveCategory("all");
+                  setCurrentPage(1);
+                }}
+              >
+                Réinitialiser les filtres
+              </Button>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="gap-2"
-            >
-              Suivant
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </motion.div>
-        )}
-      </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="mt-12 flex items-center justify-center gap-4" data-reveal="up">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="gap-2"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Précédent
+              </Button>
+              <div className="flex items-center gap-2">
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                  <button
+                    key={page}
+                    type="button"
+                    onClick={() => handlePageChange(page)}
+                    aria-current={currentPage === page ? "page" : undefined}
+                    className={cn(
+                      "h-9 w-9 rounded-md text-sm font-medium transition-all duration-200",
+                      currentPage === page
+                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+                        : "bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-900",
+                    )}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="gap-2"
+              >
+                Suivant
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </div>
+      </section>
     </div>
-  )
+  );
 }

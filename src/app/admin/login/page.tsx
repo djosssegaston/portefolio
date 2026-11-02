@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Eye, EyeOff, LogIn, Mail, Lock, Loader2, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +14,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
-  const [tempToken, setTempToken] = useState("");
+  const [challengeToken, setChallengeToken] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -51,7 +50,7 @@ export default function LoginPage() {
       }
 
       if (data.requiresTwoFactor) {
-        setTempToken(data.tempToken);
+        setChallengeToken(data.challengeToken);
         setStep("2fa");
         setLoading(false);
         return;
@@ -80,7 +79,7 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/verify-2fa", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tempToken, code: code.trim() }),
+        body: JSON.stringify({ challengeToken, code: code.trim() }),
       });
       const data = await res.json();
 
@@ -106,17 +105,11 @@ export default function LoginPage() {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+      <div
         className="relative w-full max-w-md"
       >
         <div className="rounded-2xl border border-border bg-card p-8 sm:p-10">
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.4 }}
+          <div
             className="flex flex-col items-center mb-8"
           >
             <Link href="/" className="flex items-center gap-2 group mb-4">
@@ -136,23 +129,18 @@ export default function LoginPage() {
                 ? "Connectez-vous pour accéder au tableau de bord"
                 : "Entrez le code généré par votre application d'authentification"}
             </p>
-          </motion.div>
+          </div>
 
           {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
+            <div
               className="mb-5 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-400 font-medium text-center"
             >
               {error}
-            </motion.div>
+            </div>
           )}
 
           {step === "login" ? (
-            <motion.form
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.4 }}
+            <form
               onSubmit={handleLogin}
               className="space-y-5"
             >
@@ -223,24 +211,19 @@ export default function LoginPage() {
                   </>
                 )}
               </Button>
-            </motion.form>
+            </form>
           ) : (
-            <motion.form
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.4 }}
+            <form
               onSubmit={handle2FA}
               className="space-y-5"
             >
-              <motion.div
-                initial={{ scale: 0.9 }}
-                animate={{ scale: 1 }}
+              <div
                 className="flex justify-center mb-4"
               >
                 <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
                   <Shield className="w-8 h-8 text-primary" />
                 </div>
-              </motion.div>
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="code" className="text-sm font-medium text-gray-700 text-center block">
@@ -286,10 +269,10 @@ export default function LoginPage() {
               >
                 ← Retour à la connexion
               </button>
-            </motion.form>
+            </form>
           )}
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

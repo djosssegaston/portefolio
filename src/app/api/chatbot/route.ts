@@ -1,52 +1,82 @@
 import { NextRequest } from "next/server"
+import { randomUUID } from "crypto"
 import { streamText } from "ai"
 import { groq } from "@ai-sdk/groq"
 import { buildContext, buildSystemPrompt } from "@/lib/rag"
+import { clientIp, isRateLimited } from "@/lib/rate-limit"
 
 export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
+
+const MAX_MESSAGES = 10
+const MAX_MESSAGE_LENGTH = 4000
+const MODEL = "openai/gpt-oss-120b"
 
 export async function POST(req: NextRequest) {
+  const ip = clientIp(req)
+  if (isRateLimited(`chat:${ip}`, 20, 60 * 1000)) {
+    return new Response(JSON.stringify({ error: "Trop de messages. Patientez un instant." }), {
+      status: 429,
+      headers: { "Content-Type": "application/json" },
+    })
+  }
+
   try {
     const { searchParams } = new URL(req.url)
-    const sessionId = searchParams.get("sessionId") || "anonymous"
+    const sessionId = (searchParams.get("sessionId") || "anonymous").slice(0, 100)
 
-    const { messages } = await req.json()
-    if (!messages || messages.length === 0) {
-      return new Response(JSON.stringify({ error: "messages requis" }), { status: 400 })
+    const body = await req.json()
+    const rawMessages = Array.isArray(body?.messages) ? body.messages : []
+    const messages = rawMessages
+      .filter((m: any) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+      .slice(-MAX_MESSAGES)
+      .map((m: any) => ({ role: m.role, content: m.content.slice(0, MAX_MESSAGE_LENGTH) }))
+
+    if (!messages.length) {
+      return new Response(JSON.stringify({ error: "messages requis" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      })
     }
 
-    const context = buildContext()
+    const context = await buildContext()
     const systemPrompt = buildSystemPrompt(context)
 
     const result = streamText({
-      model: groq("llama-3.3-70b-versatile"),
+      model: groq(MODEL),
       system: systemPrompt,
-      messages: messages.slice(-10),
+      messages,
+      maxRetries: 2,
+      onError: ({ error }) => {
+        console.error("[api/chatbot] stream error:", error)
+      },
       onFinish: async ({ text }) => {
         try {
           const { getPool } = await import("@/lib/db")
           const pool = await getPool()
-          const userMsg = messages[messages.length - 1]
-          const userContent = userMsg.content || userMsg.parts?.map((p: any) => p.text).filter(Boolean).join("") || ""
-          const ts = new Date().toISOString()
-          pool.execute(
+          const userContent = messages[messages.length - 1].content
+          const ts = new Date()
+          await pool.execute(
             "INSERT INTO chatbot_conversations (id, session_id, role, content) VALUES (?, ?, ?, ?)",
-            [`chatbot_${Date.now()}`, sessionId, "user", userContent]
+            [randomUUID(), sessionId, "user", userContent]
           )
-          pool.execute(
+          await pool.execute(
             "INSERT INTO chatbot_conversations (id, session_id, role, content) VALUES (?, ?, ?, ?)",
-            [`chatbot_${Date.now() + 1}`, sessionId, "assistant", text]
+            [randomUUID(), sessionId, "assistant", text]
           )
-        } catch { /* DB indisponible — chat fonctionne quand même */ }
+          void ts
+        } catch {
+          /* DB indisponible — le chat fonctionne quand même */
+        }
       },
     })
 
     return result.toTextStreamResponse()
   } catch (error: any) {
-    console.error("Chatbot API error:", error.message)
+    console.error("[api/chatbot]", error?.message || error)
     return new Response(
-      JSON.stringify({ error: error.message || "Erreur interne du serveur" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      JSON.stringify({ error: "L'assistant est momentanément indisponible." }),
+      { status: 502, headers: { "Content-Type": "application/json" } }
     )
   }
 }

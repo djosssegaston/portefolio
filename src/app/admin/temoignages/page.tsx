@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   CheckCircle2,
@@ -185,20 +184,11 @@ export default function AdminTestimonials() {
     </Card>
   );
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.05 } },
-  };
 
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.35 } },
-  };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-      <motion.div
-        variants={item}
+    <div className="space-y-6">
+      <div
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
       >
         <div>
@@ -209,9 +199,9 @@ export default function AdminTestimonials() {
             {loading ? "Chargement..." : `${testimonials.length} témoignage${testimonials.length > 1 ? "s" : ""} au total`}
           </p>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div variants={item}>
+      <div>
         <Card>
           <CardContent className="p-4">
             <div className="relative">
@@ -225,7 +215,7 @@ export default function AdminTestimonials() {
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
 
       <Tabs defaultValue="pending" className="space-y-4">
         <TabsList>
@@ -247,15 +237,10 @@ export default function AdminTestimonials() {
           </TabsTrigger>
         </TabsList>
 
-        <AnimatePresence mode="wait">
-          {["pending", "published"].map((tab) => (
+                  {["pending", "published"].map((tab) => (
             <TabsContent key={tab} value={tab} className="mt-0">
-              <motion.div
+              <div
                 key={tab}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25 }}
                 className="space-y-3"
               >
                 {tab === "pending" && pending.length === 0 && (
@@ -288,25 +273,19 @@ export default function AdminTestimonials() {
                     </CardContent>
                   </Card>
                 )}
-                <AnimatePresence>
-                  {(tab === "pending" ? pending : published).map((testimonial) => (
-                    <motion.div
+                                  {(tab === "pending" ? pending : published).map((testimonial) => (
+                    <div
                       key={testimonial.id}
-                      layout
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, x: -20, height: 0, marginBottom: 0 }}
-                      transition={{ duration: 0.3 }}
                     >
                       {renderCard(testimonial, tab as "pending" | "published")}
-                    </motion.div>
+                    </div>
                   ))}
-                </AnimatePresence>
-              </motion.div>
+                
+              </div>
             </TabsContent>
           ))}
-        </AnimatePresence>
+        
       </Tabs>
-    </motion.div>
+    </div>
   );
 }

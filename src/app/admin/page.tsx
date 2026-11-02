@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
-import { motion } from "framer-motion";
 import {
   MessageSquare,
   TrendingUp,
@@ -400,10 +399,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
+      <div
       >
         <h1 className="text-2xl lg:text-3xl font-heading font-bold text-foreground">
           {greeting}, Adechina
@@ -411,13 +407,10 @@ export default function AdminDashboard() {
         <p className="text-secondary mt-1">
           Voici un aperçu de votre tableau de bord.
         </p>
-      </motion.div>
+      </div>
 
       {(loading || error) && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
+        <div
           className={cn(
             "flex items-center gap-3 px-4 py-3 rounded-lg",
             error
@@ -433,7 +426,7 @@ export default function AdminDashboard() {
           <p className={cn("text-sm", error ? "text-rose-300" : "text-secondary")}>
             {error ?? "Chargement des statistiques..."}
           </p>
-        </motion.div>
+        </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -480,10 +473,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
+        <div
         >
           <Card className="rounded-lg border border-border bg-card">
             <CardHeader className="pb-2">
@@ -533,12 +523,9 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
+        <div
         >
           <Card className="rounded-lg border border-border bg-card">
             <CardHeader className="pb-2">
@@ -582,14 +569,11 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.3 }}
+        <div
           className="lg:col-span-2"
         >
           <Card className="rounded-lg border border-border bg-card">
@@ -641,12 +625,9 @@ export default function AdminDashboard() {
               )}
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.4 }}
+        <div
         >
           <Card className="rounded-lg border border-border bg-card">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -697,13 +678,10 @@ export default function AdminDashboard() {
               )}
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.5 }}
+      <div
       >
         <Card className="rounded-lg border border-border bg-card">
           <CardHeader className="pb-2">
@@ -732,7 +710,7 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -759,10 +737,7 @@ function StatCard({
   const count = useCounter(value);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay }}
+    <div
     >
       <Card className="rounded-lg border border-border bg-card">
         <CardContent className="p-5">
@@ -793,6 +768,6 @@ function StatCard({
           </div>
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   );
 }

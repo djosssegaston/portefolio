@@ -1,7 +1,7 @@
 "use client"
 
-import { motion } from "framer-motion"
 import Link from "next/link"
+import PageHero from "@/components/layout/PageHero"
 import Image from "next/image"
 import {
   ArrowLeft, Calendar, MapPin, GraduationCap, Mic, Wrench, Trophy,
@@ -73,59 +73,53 @@ export default function EventDetailPage({ evt, related }: { evt: EventTraining; 
   const TypeIcon = typeIcons[evt.type] || Calendar
 
   return (
-    <div className="pt-20">
-      <div className="bg-gradient-to-b from-primary-50/50 to-background py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Link
-              href="/evenements"
-              className="inline-flex items-center text-muted-foreground hover:text-primary transition-colors mb-6"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Retour aux événements
-            </Link>
-            <div className="flex flex-wrap items-center gap-3 mb-4">
-              <Badge>{typeLabels[evt.type] || evt.type}</Badge>
-              {evt.status === "upcoming" && (
-                <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-200">
-                  <Clock className="w-3 h-3 mr-1" />
-                  À venir
-                </Badge>
-              )}
-              {evt.status === "completed" && (
-                <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200">
-                  Terminé
-                </Badge>
-              )}
-              {evt.featured && (
-                <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-200">
-                  À la une
-                </Badge>
-              )}
-            </div>
-            <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">{evt.title}</h1>
-            <p className="text-lg text-muted-foreground max-w-2xl">{evt.description}</p>
-          </motion.div>
+    <div>
+      <PageHero
+        eyebrow={typeLabels[evt.type] || evt.type}
+        title={evt.title}
+        description={evt.description}
+        breadcrumb={[
+          { label: "Accueil", href: "/" },
+          { label: "Événements", href: "/evenements" },
+          { label: evt.title },
+        ]}
+        variant="grid"
+      >
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-medium text-slate-300 backdrop-blur-md">
+            <Calendar className="h-3.5 w-3.5 text-cyan-300" />
+            {formatDateRange(evt.startDate, evt.endDate)}
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-medium text-slate-300 backdrop-blur-md">
+            <MapPin className="h-3.5 w-3.5 text-cyan-300" />
+            {evt.location}
+          </span>
+          {evt.status === "upcoming" && (
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-4 py-2 text-xs font-medium text-emerald-300 backdrop-blur-md">
+              <Clock className="h-3.5 w-3.5" />
+              À venir
+            </span>
+          )}
+          {evt.certificate && (
+            <span className="inline-flex items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/10 px-4 py-2 text-xs font-medium text-amber-300 backdrop-blur-md">
+              <Award className="h-3.5 w-3.5" />
+              Certificat délivré
+            </span>
+          )}
         </div>
-      </div>
+      </PageHero>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           <div className="lg:col-span-2 space-y-12">
-            <motion.section
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+            <section
             >
               <h2 className="font-heading text-2xl font-bold mb-4">À propos de l&apos;événement</h2>
               <p className="text-muted-foreground leading-relaxed">{evt.longDescription}</p>
-            </motion.section>
+            </section>
 
             {evt.gallery && evt.gallery.length > 0 && (
-              <motion.section
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+              <section
               >
                 <h2 className="font-heading text-2xl font-bold mb-6">Galerie</h2>
                 <div className={cn(
@@ -152,14 +146,11 @@ export default function EventDetailPage({ evt, related }: { evt: EventTraining; 
                     </div>
                   ))}
                 </div>
-              </motion.section>
+              </section>
             )}
 
             {evt.speaker && (
-              <motion.section
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+              <section
               >
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
@@ -182,14 +173,11 @@ export default function EventDetailPage({ evt, related }: { evt: EventTraining; 
                     )}
                   </CardContent>
                 </Card>
-              </motion.section>
+              </section>
             )}
 
             {evt.skills.length > 0 && (
-              <motion.section
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+              <section
               >
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
@@ -209,15 +197,14 @@ export default function EventDetailPage({ evt, related }: { evt: EventTraining; 
                     </Badge>
                   ))}
                 </div>
-              </motion.section>
+              </section>
             )}
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
+          <div
             className="space-y-8"
+            data-reveal="left"
+            data-reveal-delay="0.1"
           >
             <Card>
               <CardContent className="p-6 space-y-4">
@@ -315,7 +302,7 @@ export default function EventDetailPage({ evt, related }: { evt: EventTraining; 
                 </CardContent>
               </Card>
             )}
-          </motion.div>
+          </div>
         </div>
       </div>
 

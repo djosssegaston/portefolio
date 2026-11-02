@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
 
 /** Admin: the moderation queue. */
 export async function GET(req: NextRequest) {
-  const auth = requireAdmin(req)
+  const auth = await requireAdmin(req)
   if ("error" in auth) return unauthorized(auth)
   try {
     const filter = req.nextUrl.searchParams.get("filter")
@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
 
 /** Admin bulk moderation: { ids, action: "validate" | "unvalidate" | "delete" } */
 export async function PATCH(req: NextRequest) {
-  const auth = requireAdmin(req)
+  const auth = await requireAdmin(req)
   if ("error" in auth) return unauthorized(auth)
   try {
     const { ids, action } = await req.json()

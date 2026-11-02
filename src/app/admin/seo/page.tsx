@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
 import {
   Save,
   Search,
@@ -91,7 +90,7 @@ export default function AdminSEO() {
     setLoadError(null);
     setLoading(true);
     try {
-      const res = await fetch("/api/seo", { cache: "no-store" });
+      const res = await fetch("/api/seo", { cache: "no-store", headers: authHeaders() });
       const payload = await readJson(res);
       if (!res.ok) throw new Error(payload?.error ?? "Erreur de chargement");
       setSeo(normalizeSeo(payload?.data));
@@ -155,20 +154,11 @@ export default function AdminSEO() {
   const truncatedDesc = (text: string, max: number) =>
     text.length > max ? text.slice(0, max) + "..." : text;
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.05 } },
-  };
 
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.35 } },
-  };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-      <motion.div
-        variants={item}
+    <div className="space-y-6">
+      <div
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
       >
         <div>
@@ -193,10 +183,10 @@ export default function AdminSEO() {
             {saving ? "Sauvegarde..." : "Sauvegarder"}
           </Button>
         </div>
-      </motion.div>
+      </div>
 
       {loadError && (
-        <motion.div variants={item}>
+        <div>
           <div className="flex items-start gap-2 p-3 rounded-lg border border-amber-200 bg-amber-50">
             <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
             <p className="text-xs text-amber-800">
@@ -204,7 +194,7 @@ export default function AdminSEO() {
               par défaut sont affichées, la sauvegarde reste disponible.
             </p>
           </div>
-        </motion.div>
+        </div>
       )}
 
       <Tabs defaultValue="general" className="space-y-4">
@@ -229,8 +219,8 @@ export default function AdminSEO() {
 
         {/* General Tab */}
         <TabsContent value="general" className="space-y-4">
-          <motion.div variants={container} initial="hidden" animate="show" className="space-y-4">
-            <motion.div variants={item}>
+          <div className="space-y-4">
+            <div>
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
@@ -304,10 +294,10 @@ export default function AdminSEO() {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
 
             {/* Google Preview */}
-            <motion.div variants={item}>
+            <div>
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
@@ -332,14 +322,14 @@ export default function AdminSEO() {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </TabsContent>
 
         {/* Open Graph Tab */}
         <TabsContent value="og" className="space-y-4">
-          <motion.div variants={container} initial="hidden" animate="show" className="space-y-4">
-            <motion.div variants={item}>
+          <div className="space-y-4">
+            <div>
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
@@ -378,10 +368,10 @@ export default function AdminSEO() {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
 
             {/* OG Preview */}
-            <motion.div variants={item}>
+            <div>
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
@@ -416,14 +406,14 @@ export default function AdminSEO() {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </TabsContent>
 
         {/* Twitter Tab */}
         <TabsContent value="twitter" className="space-y-4">
-          <motion.div variants={container} initial="hidden" animate="show" className="space-y-4">
-            <motion.div variants={item}>
+          <div className="space-y-4">
+            <div>
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
@@ -475,10 +465,10 @@ export default function AdminSEO() {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
 
             {/* Twitter Preview */}
-            <motion.div variants={item}>
+            <div>
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
@@ -515,14 +505,14 @@ export default function AdminSEO() {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </TabsContent>
 
         {/* Advanced Tab */}
         <TabsContent value="advanced" className="space-y-4">
-          <motion.div variants={container} initial="hidden" animate="show" className="space-y-4">
-            <motion.div variants={item}>
+          <div className="space-y-4">
+            <div>
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
@@ -542,9 +532,9 @@ export default function AdminSEO() {
                   />
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
 
-            <motion.div variants={item}>
+            <div>
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
@@ -600,9 +590,9 @@ export default function AdminSEO() {
                   )}
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
 
-            <motion.div variants={item} className="flex justify-end">
+            <div className="flex justify-end">
               <Button onClick={handleSave} className="gap-2" disabled={saving || loading}>
                 {saving ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -611,10 +601,10 @@ export default function AdminSEO() {
                 )}
                 {saving ? "Sauvegarde..." : "Sauvegarder les paramètres"}
               </Button>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
-    </motion.div>
+    </div>
   );
 }

@@ -6,6 +6,11 @@ import { getEventBySlug, getEvents } from "@/lib/content"
 
 export const revalidate = 60
 
+export async function generateStaticParams() {
+  const events = await getEvents()
+  return events.map((event: EventTraining) => ({ slug: event.slug }))
+}
+
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const evt = await getEventBySlug(params.slug)
   if (!evt) return { title: "Événements" }

@@ -25,7 +25,11 @@ async function readConfig(): Promise<Record<string, any>> {
   return out
 }
 
-/** One-time import of the legacy src/lib/data/config.json into the database. */
+/**
+ * One-time import of the legacy src/lib/data/config.json into the database.
+ * INSERT IGNORE is important: existing admin-edited values must never be
+ * overwritten when a new server process starts.
+ */
 async function migrateLegacyConfig() {
   try {
     const raw = await readFile(legacyConfigPath, "utf-8")
@@ -34,12 +38,11 @@ async function migrateLegacyConfig() {
     if (!entries.length) return
     for (const [key, value] of entries) {
       await queryRaw(
-        `INSERT INTO site_configs (id, cle, valeur) VALUES (?, ?, ?)
-         ON DUPLICATE KEY UPDATE valeur = VALUES(valeur)`,
+        "INSERT IGNORE INTO site_configs (id, cle, valeur) VALUES (?, ?, ?)",
         [newId(), key, JSON.stringify(value)]
       )
     }
-    console.log(`[api/config] migrated ${entries.length} keys from legacy config.json`)
+    console.log(`[api/config] imported missing keys from legacy config.json`)
   } catch {
     // No legacy file — nothing to migrate.
   }
@@ -67,7 +70,7 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-  const auth = requireAdmin(req)
+  const auth = await requireAdmin(req, ["super_admin", "admin"])
   if ("error" in auth) return unauthorized(auth)
   try {
     const body = await req.json()

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   Plus,
@@ -193,18 +192,7 @@ export default function AdminUtilisateurs() {
     }));
   };
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.06 },
-    },
-  };
 
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.35 } },
-  };
 
   const RoleIcon = (role: AdminUser["role"]) => {
     if (role === "super_admin") return ShieldAlert;
@@ -213,8 +201,8 @@ export default function AdminUtilisateurs() {
   };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-      <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-heading font-bold text-foreground">
             Gestion des Utilisateurs
@@ -317,9 +305,9 @@ export default function AdminUtilisateurs() {
             </div>
           </DialogContent>
         </Dialog>
-      </motion.div>
+      </div>
 
-      <motion.div variants={item}>
+      <div>
         <Card>
           <CardContent className="p-4">
             <div className="relative">
@@ -333,15 +321,11 @@ export default function AdminUtilisateurs() {
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
 
-      <AnimatePresence mode="wait">
-        {filtered.length === 0 ? (
-          <motion.div
+              {filtered.length === 0 ? (
+          <div
             key="empty"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
           >
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-16 gap-3">
@@ -362,20 +346,15 @@ export default function AdminUtilisateurs() {
                 )}
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         ) : (
-          <motion.div key="list" variants={container} initial="hidden" animate="show" className="space-y-3">
-            <AnimatePresence>
-              {filtered.map((user) => {
+          <div key="list" className="space-y-3">
+                          {filtered.map((user) => {
                 const RoleIconComp = RoleIcon(user.role);
                 const cfg = roleConfig[user.role];
                 return (
-                  <motion.div
+                  <div
                     key={user.id}
-                    layout
-                    variants={item}
-                    exit={{ opacity: 0, x: -20, height: 0, marginBottom: 0 }}
-                    transition={{ duration: 0.3 }}
                   >
                     <Card className={cn(
                       "group hover:shadow-md transition-all duration-300 hover:border-primary/20",
@@ -449,13 +428,13 @@ export default function AdminUtilisateurs() {
                         </div>
                       </CardContent>
                     </Card>
-                  </motion.div>
+                  </div>
                 );
               })}
-            </AnimatePresence>
-          </motion.div>
+            
+          </div>
         )}
-      </AnimatePresence>
+      
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="sm:max-w-md">
@@ -475,6 +454,6 @@ export default function AdminUtilisateurs() {
           </div>
         </DialogContent>
       </Dialog>
-    </motion.div>
+    </div>
   );
 }

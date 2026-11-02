@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
 import {
   Save,
   User,
@@ -85,7 +84,7 @@ export default function AdminProfil() {
     formData.append("file", file);
 
     try {
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const res = await fetch("/api/upload", { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("admin_token")}` }, body: formData });
       const data = await res.json();
 
       await fetch("/api/config", {
@@ -117,7 +116,7 @@ export default function AdminProfil() {
     formData.append("file", file);
 
     try {
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const res = await fetch("/api/upload", { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("admin_token")}` }, body: formData });
       const data = await res.json();
 
       await fetch("/api/config", {
@@ -165,19 +164,11 @@ export default function AdminProfil() {
     }
   };
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.08 } },
-  };
 
-  const item = {
-    hidden: { opacity: 0, y: 16 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
-  };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-      <motion.div variants={item} className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl lg:text-3xl font-heading font-bold text-foreground">
             Gestion du Profil
@@ -190,7 +181,7 @@ export default function AdminProfil() {
           <Save className="w-4 h-4" />
           Enregistrer
         </Button>
-      </motion.div>
+      </div>
 
       <Tabs defaultValue="informations" className="space-y-6">
         <TabsList>
@@ -200,7 +191,7 @@ export default function AdminProfil() {
         </TabsList>
 
         <TabsContent value="informations" className="space-y-6">
-          <motion.div variants={container} initial="hidden" animate="show">
+          <div>
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg font-heading flex items-center gap-2">
@@ -363,11 +354,11 @@ export default function AdminProfil() {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </TabsContent>
 
         <TabsContent value="presentation" className="space-y-6">
-          <motion.div variants={container} initial="hidden" animate="show">
+          <div>
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg font-heading flex items-center gap-2">
@@ -393,11 +384,11 @@ export default function AdminProfil() {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </TabsContent>
 
         <TabsContent value="reseaux" className="space-y-6">
-          <motion.div variants={container} initial="hidden" animate="show">
+          <div>
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg font-heading flex items-center gap-2">
@@ -412,9 +403,8 @@ export default function AdminProfil() {
                 {socialLinks.map((link, index) => {
                   const color = iconMap[link.icon] || "#666";
                   return (
-                    <motion.div
+                    <div
                       key={index}
-                      variants={item}
                       className="flex items-center gap-4 p-4 rounded-xl border border-border bg-card hover:shadow-sm transition-shadow"
                     >
                       <div
@@ -435,21 +425,21 @@ export default function AdminProfil() {
                           />
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   );
                 })}
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </TabsContent>
       </Tabs>
 
-      <motion.div variants={item} className="flex justify-end">
+      <div className="flex justify-end">
         <Button onClick={handleSave} size="lg" className="gap-2">
           <Save className="w-4 h-4" />
           Enregistrer les modifications
         </Button>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }

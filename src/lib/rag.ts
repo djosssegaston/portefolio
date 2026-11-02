@@ -1,46 +1,63 @@
-import { projects } from "@/lib/data/projects"
-import { skills } from "@/lib/data/skills"
-import { experiences } from "@/lib/data/experiences"
-import { education } from "@/lib/data/education"
-import { services } from "@/lib/data/services"
-import { certifications } from "@/lib/data/certifications"
-import { events as eventTrainings } from "@/lib/data/events"
+import {
+  getProjects,
+  getSkills,
+  getExperiences,
+  getEducation,
+  getServices,
+  getCertifications,
+  getEvents,
+} from "@/lib/content"
 
-export function buildContext() {
+/**
+ * Builds the chatbot context from the live database (with the same static
+ * fallback as the public pages), so admin edits are reflected immediately.
+ */
+export async function buildContext() {
+  const [projects, skills, experiences, education, services, certifications, eventTrainings] =
+    await Promise.all([
+      getProjects({ publishedOnly: true }),
+      getSkills(),
+      getExperiences(),
+      getEducation(),
+      getServices(),
+      getCertifications(),
+      getEvents(),
+    ])
+
   return {
-    projects: projects.map((p) => ({
+    projects: projects.map((p: any) => ({
       title: p.title,
       description: p.description,
       category: p.category,
       technologies: p.technologies || [],
-      results: (p as any).results || [],
+      results: p.results || [],
     })),
-    skills: skills.map((s) => ({
+    skills: skills.map((s: any) => ({
       name: s.name,
       level: s.level,
       category: s.category,
     })),
-    experiences: experiences.map((e) => ({
+    experiences: experiences.map((e: any) => ({
       company: e.company,
       position: e.position,
       description: e.description,
-      achievements: (e as any).achievements || [],
+      achievements: e.achievements || [],
     })),
-    education: education.map((e) => ({
+    education: education.map((e: any) => ({
       institution: e.institution,
       degree: e.degree,
       field: e.field,
     })),
-    services: services.map((s) => ({
+    services: services.map((s: any) => ({
       title: s.title,
       description: s.description,
     })),
-    certifications: certifications.map((c) => ({
+    certifications: certifications.map((c: any) => ({
       title: c.title,
       issuer: c.issuer,
       description: c.description,
     })),
-    events: eventTrainings.map((e) => ({
+    events: eventTrainings.map((e: any) => ({
       title: e.title,
       type: e.type,
       description: e.description,
@@ -63,7 +80,7 @@ Réponds de manière concise et professionnelle en français.
 
 ## CONTACT PRIORITAIRE
 - Pour une réponse instantanée, l'utilisateur peut cliquer sur le bouton WhatsApp (icône verte dans le menu) et laisser un message au 0168552584.
-- Pour une urgence, appeler directement le 0190109023.
+- Pour une urgence, appeler directement au 0190109023.
 
 Voici les informations à jour sur DJOSSE Adechina :
 

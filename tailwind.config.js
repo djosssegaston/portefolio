@@ -14,7 +14,7 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        heading: ["Poppins", "sans-serif"],
+        heading: ["Space Grotesk", "Poppins", "sans-serif"],
         body: ["Inter", "sans-serif"],
       },
       colors: {

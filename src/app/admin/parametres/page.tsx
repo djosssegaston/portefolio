@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
 import {
   Globe,
   Palette,
@@ -98,7 +97,7 @@ export default function AdminParametres() {
     const fd = new FormData();
     fd.append("file", file);
     try {
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const res = await fetch("/api/upload", { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("admin_token")}` }, body: fd });
       const data = await res.json();
       await fetch("/api/config", {
         method: "PUT",
@@ -125,7 +124,7 @@ export default function AdminParametres() {
     const fd = new FormData();
     fd.append("file", file);
     try {
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const res = await fetch("/api/upload", { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("admin_token")}` }, body: fd });
       const data = await res.json();
       await fetch("/api/config", {
         method: "PUT",
@@ -145,22 +144,11 @@ export default function AdminParametres() {
     }
   };
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.06 },
-    },
-  };
 
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.35 } },
-  };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-      <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-heading font-bold text-foreground">
             Paramètres
@@ -173,7 +161,7 @@ export default function AdminParametres() {
           <RotateCcw className="w-4 h-4" />
           Réinitialiser
         </Button>
-      </motion.div>
+      </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:grid-cols-4 gap-1">
@@ -196,7 +184,7 @@ export default function AdminParametres() {
         </TabsList>
 
         <TabsContent value="general" className="mt-6 space-y-6">
-          <motion.div variants={item}>
+          <div>
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -308,11 +296,11 @@ export default function AdminParametres() {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </TabsContent>
 
         <TabsContent value="appearance" className="mt-6 space-y-6">
-          <motion.div variants={item}>
+          <div>
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -403,11 +391,11 @@ export default function AdminParametres() {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </TabsContent>
 
         <TabsContent value="maintenance" className="mt-6 space-y-6">
-          <motion.div variants={item}>
+          <div>
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -471,11 +459,11 @@ export default function AdminParametres() {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </TabsContent>
 
         <TabsContent value="integrations" className="mt-6 space-y-6">
-          <motion.div variants={item}>
+          <div>
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -550,9 +538,9 @@ export default function AdminParametres() {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </TabsContent>
       </Tabs>
-    </motion.div>
+    </div>
   );
 }

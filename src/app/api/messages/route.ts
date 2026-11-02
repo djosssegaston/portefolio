@@ -6,7 +6,7 @@ import { requireAdmin, unauthorized } from "@/lib/crud"
 export const dynamic = "force-dynamic"
 
 export async function GET(req: NextRequest) {
-  const auth = requireAdmin(req)
+  const auth = await requireAdmin(req)
   if ("error" in auth) return unauthorized(auth)
   try {
     const view = req.nextUrl.searchParams.get("view") ?? "inbox"
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
 
 /** Bulk actions: mark read/unread, archive, unarchive, delete. */
 export async function PATCH(req: NextRequest) {
-  const auth = requireAdmin(req)
+  const auth = await requireAdmin(req)
   if ("error" in auth) return unauthorized(auth)
   try {
     const { ids, action } = await req.json()

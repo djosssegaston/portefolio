@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   UserCircle,
@@ -33,6 +32,8 @@ import {
   CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { gsap } from "@/lib/gsap";
+import { lockScroll, unlockScroll } from "@/lib/scroll-lock";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -76,6 +77,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [mounted, setMounted] = useState(false);
   const [checking, setChecking] = useState(true);
   const [adminUser, setAdminUser] = useState<{ name: string; email: string; role: string } | null>(null);
+  const mobileAsideRef = useRef<HTMLElement>(null);
+  const mobileOverlayRef = useRef<HTMLDivElement>(null);
+  const desktopNavRef = useRef<HTMLElement>(null);
+  const desktopIndicatorRef = useRef<HTMLSpanElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -88,6 +94,115 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     setSidebarOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    lockScroll();
+    return () => unlockScroll();
+  }, [sidebarOpen]);
+
+  useEffect(() => {
+    const aside = mobileAsideRef.current;
+    const overlay = mobileOverlayRef.current;
+    if (!aside || !overlay) return;
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const items = aside.querySelectorAll<HTMLElement>("[data-admin-nav-item]");
+
+    if (sidebarOpen) {
+      if (reduced) {
+        gsap.set([aside, overlay], { autoAlpha: 1, xPercent: 0 });
+      } else {
+        gsap.set(aside, { display: "block" });
+        gsap.to(overlay, { autoAlpha: 1, duration: 0.22, ease: "power2.out" });
+        gsap.fromTo(
+          aside,
+          { xPercent: -100, autoAlpha: 0 },
+          { xPercent: 0, autoAlpha: 1, duration: 0.45, ease: "power3.out" },
+        );
+        gsap.fromTo(
+          items,
+          { x: -18, opacity: 0 },
+          {
+            x: 0,
+            opacity: 1,
+            duration: 0.45,
+            stagger: 0.025,
+            delay: 0.08,
+            ease: "power3.out",
+          },
+        );
+      }
+    } else {
+      if (reduced) {
+        gsap.set([aside, overlay], { autoAlpha: 0 });
+      } else {
+        gsap.to(aside, {
+          xPercent: -100,
+          autoAlpha: 0,
+          duration: 0.32,
+          ease: "power2.in",
+          onComplete: () => gsap.set(aside, { display: "none" }),
+        });
+        gsap.to(overlay, { autoAlpha: 0, duration: 0.2 });
+      }
+    }
+
+  }, [sidebarOpen]);
+
+  useEffect(() => {
+    const nav = desktopNavRef.current;
+    const indicator = desktopIndicatorRef.current;
+    if (!nav || !indicator) return;
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const active = nav.querySelector<HTMLElement>('[data-admin-active="true"]');
+    if (!active) {
+      gsap.set(indicator, { opacity: 0 });
+      return;
+    }
+
+    const y = active.offsetTop + (active.offsetHeight - 24) / 2;
+    if (reduced) {
+      gsap.set(indicator, { y, opacity: 1 });
+      return;
+    }
+
+    gsap.to(indicator, {
+      y,
+      opacity: 1,
+      duration: 0.45,
+      ease: "power3.out",
+      overwrite: true,
+    });
+  }, [pathname, sidebarCollapsed]);
+
+  useEffect(() => {
+    const main = mainRef.current;
+    if (!main) return;
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) return;
+
+    const blocks = Array.from(main.children) as HTMLElement[];
+    if (!blocks.length) return;
+
+    const tween = gsap.fromTo(
+      blocks,
+      { opacity: 0, y: 18 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        stagger: 0.06,
+        ease: "power3.out",
+        clearProps: "transform",
+      },
+    );
+    return () => {
+      tween.kill();
+    };
   }, [pathname]);
 
   async function checkAuth() {
@@ -144,39 +259,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Mobile overlay */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
+      <div
+        ref={mobileOverlayRef}
+        className={cn(
+          "fixed inset-0 z-40 bg-black/80 opacity-0 backdrop-blur-sm lg:hidden",
+          sidebarOpen ? "pointer-events-auto" : "pointer-events-none",
         )}
-      </AnimatePresence>
+        onClick={() => setSidebarOpen(false)}
+        aria-hidden="true"
+      />
 
       {/* Mobile sidebar */}
-      <AnimatePresence mode="wait">
-        {sidebarOpen && (
-          <motion.aside
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed inset-y-0 left-0 z-50 w-72 bg-card border-r border-border shadow-xl lg:hidden"
-          >
-            <SidebarContent
-              pathname={pathname}
-              isActive={isActive}
-              collapsed={false}
-              onClose={() => setSidebarOpen(false)}
-              onLogout={handleLogout}
-            />
-          </motion.aside>
-        )}
-      </AnimatePresence>
+      <aside
+        ref={mobileAsideRef}
+        className="fixed inset-y-0 left-0 z-50 hidden w-72 border-r border-border bg-card shadow-xl lg:hidden"
+        aria-hidden={!sidebarOpen}
+      >
+        <SidebarContent
+          isActive={isActive}
+          onClose={() => setSidebarOpen(false)}
+          onLogout={handleLogout}
+        />
+      </aside>
+
 
       {/* Desktop sidebar */}
       <aside
@@ -216,7 +321,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
 
         <ScrollArea className="flex-1 py-2">
-          <nav className="px-2 space-y-0.5">
+          <nav ref={desktopNavRef} className="relative px-2 space-y-0.5">
+            <span
+              ref={desktopIndicatorRef}
+              aria-hidden="true"
+              className="pointer-events-none absolute left-2 top-0 h-6 w-1 rounded-r-full bg-primary opacity-0"
+            />
             {sidebarLinks.map((link) => {
               const Icon = link.icon;
               const active = isActive(link.href);
@@ -224,6 +334,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Link
                   key={link.href}
                   href={link.href}
+                  data-admin-active={active}
+                  data-admin-nav-item
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group relative",
                     active
@@ -234,13 +346,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <Icon className={cn("w-5 h-5 shrink-0", active ? "text-primary" : "text-gray-400 group-hover:text-gray-600")} />
                   {!sidebarCollapsed && (
                     <span>{link.name}</span>
-                  )}
-                  {active && (
-                    <motion.span
-                      layoutId="active-indicator"
-                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full"
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    />
                   )}
                 </Link>
               );
@@ -339,22 +444,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         {/* Page content */}
-        <main className="p-4 lg:p-6">{children}</main>
+        <main ref={mainRef} className="p-4 lg:p-6">{children}</main>
       </div>
     </div>
   );
 }
 
 function SidebarContent({
-  pathname,
   isActive,
-  collapsed,
   onClose,
   onLogout,
 }: {
-  pathname: string;
   isActive: (href: string) => boolean;
-  collapsed: boolean;
   onClose: () => void;
   onLogout: () => void;
 }) {
@@ -387,6 +488,7 @@ function SidebarContent({
                 key={link.href}
                 href={link.href}
                 onClick={onClose}
+                data-admin-nav-item
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group relative",
                   active
@@ -397,10 +499,8 @@ function SidebarContent({
                   <Icon className={cn("w-5 h-5 shrink-0", active ? "text-primary" : "text-gray-400 group-hover:text-gray-600")} />
                 <span>{link.name}</span>
                 {active && (
-                  <motion.span
-                    layoutId="active-indicator-mobile"
+                  <span
                     className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full"
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
                   />
                 )}
               </Link>

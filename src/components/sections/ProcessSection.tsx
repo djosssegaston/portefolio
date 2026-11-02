@@ -1,7 +1,5 @@
 "use client"
 
-import { useRef } from "react"
-import { motion, useInView } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 interface Step {
@@ -21,15 +19,9 @@ const steps: Step[] = [
 ]
 
 function StepCard({ step, index, isLast }: { step: Step; index: number; isLast: boolean }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const isInView = useInView(ref, { once: true, margin: "-80px" })
-
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 20 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.4, delay: index * 0.1 }}
+    <div
+      data-reveal={index % 2 === 0 ? "right" : "left"}
       className={cn(
         "relative flex",
         index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
@@ -65,7 +57,7 @@ function StepCard({ step, index, isLast }: { step: Step; index: number; isLast: 
           </p>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -77,13 +69,7 @@ export default function ProcessSection() {
       aria-label="Processus de développement"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="mb-16 text-center"
-        >
+        <div className="mb-16 text-center" data-reveal="up">
           <span className="section-label">
             Ma méthodologie
           </span>
@@ -93,18 +79,19 @@ export default function ProcessSection() {
           <p className="section-desc">
             Une approche structurée en six étapes pour garantir la réussite de votre projet, de l&apos;idée à la mise en production.
           </p>
-        </motion.div>
+        </div>
 
         <div className="relative mx-auto max-w-3xl">
           <div className="pointer-events-none absolute left-7 top-0 bottom-0 w-px bg-gradient-to-b from-accent/30 via-accent/10 to-transparent md:left-1/2 md:-translate-x-px" />
 
           {steps.map((step, index) => (
+            <div key={step.number} className="contents">
             <StepCard
-              key={step.number}
               step={step}
               index={index}
               isLast={index === steps.length - 1}
             />
+            </div>
           ))}
         </div>
       </div>

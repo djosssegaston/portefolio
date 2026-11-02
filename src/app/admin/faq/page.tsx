@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   Plus,
@@ -169,20 +168,11 @@ export default function AdminFAQ() {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.04 } },
-  };
 
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.35 } },
-  };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-      <motion.div
-        variants={item}
+    <div className="space-y-6">
+      <div
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
       >
         <div>
@@ -197,9 +187,9 @@ export default function AdminFAQ() {
           <Plus className="w-4 h-4" />
           Ajouter une question
         </Button>
-      </motion.div>
+      </div>
 
-      <motion.div variants={item}>
+      <div>
         <Card>
           <CardContent className="p-4 space-y-3">
             <div className="relative">
@@ -223,15 +213,11 @@ export default function AdminFAQ() {
             </Tabs>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
 
-      <AnimatePresence mode="wait">
-        {sorted.length === 0 ? (
-          <motion.div
+              {sorted.length === 0 ? (
+          <div
             key="empty"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
           >
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-16 gap-3">
@@ -252,17 +238,12 @@ export default function AdminFAQ() {
                 )}
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         ) : (
-          <motion.div key="list" variants={container} initial="hidden" animate="show" className="space-y-2">
-            <AnimatePresence>
-              {sorted.map((faqItem, idx) => (
-                <motion.div
+          <div key="list" className="space-y-2">
+                          {sorted.map((faqItem, idx) => (
+                <div
                   key={faqItem.id}
-                  layout
-                  variants={item}
-                  exit={{ opacity: 0, x: -20, height: 0, marginBottom: 0 }}
-                  transition={{ duration: 0.3 }}
                 >
                   <Card
                     className={cn(
@@ -360,30 +341,25 @@ export default function AdminFAQ() {
                         </div>
                       </div>
 
-                      <AnimatePresence>
-                        {expandedId === faqItem.id && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.25 }}
+                                              {expandedId === faqItem.id && (
+                          <div
                             className="overflow-hidden"
                           >
                             <Separator className="my-3" />
                             <p className="text-sm text-muted-foreground leading-relaxed">
                               {faqItem.answer}
                             </p>
-                          </motion.div>
+                          </div>
                         )}
-                      </AnimatePresence>
+                      
                     </CardContent>
                   </Card>
-                </motion.div>
+                </div>
               ))}
-            </AnimatePresence>
-          </motion.div>
+            
+          </div>
         )}
-      </AnimatePresence>
+      
 
       {/* Add/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -472,6 +448,6 @@ export default function AdminFAQ() {
           </div>
         </DialogContent>
       </Dialog>
-    </motion.div>
+    </div>
   );
 }

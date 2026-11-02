@@ -1,6 +1,5 @@
 "use client"
 
-import { motion } from "framer-motion"
 import {
   MessageCircle,
   ArrowRight,
@@ -21,11 +20,7 @@ export default function CTASection() {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/5 to-transparent" />
 
       <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
+        <div
           className="rounded-2xl border border-border bg-card/80 p-8 text-center sm:p-12 lg:p-16"
         >
           <h2 className="font-heading text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl md:text-5xl">
@@ -78,7 +73,7 @@ export default function CTASection() {
               <span>{siteConfig.phone}</span>
             </a>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   )

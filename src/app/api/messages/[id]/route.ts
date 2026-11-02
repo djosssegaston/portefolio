@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic"
 type Ctx = { params: { id: string } }
 
 export async function PATCH(req: NextRequest, { params }: Ctx) {
-  const auth = requireAdmin(req)
+  const auth = await requireAdmin(req)
   if ("error" in auth) return unauthorized(auth)
   try {
     const body = await req.json()
@@ -39,7 +39,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
 }
 
 export async function DELETE(req: NextRequest, { params }: Ctx) {
-  const auth = requireAdmin(req)
+  const auth = await requireAdmin(req)
   if ("error" in auth) return unauthorized(auth)
   try {
     await query("DELETE FROM contact_messages WHERE id = ?", [params.id])

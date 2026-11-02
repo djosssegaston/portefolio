@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   Mail,
@@ -292,15 +291,7 @@ export default function AdminMessages() {
     });
   };
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.04 } },
-  };
 
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.35 } },
-  };
 
   const filterBtns: { key: FilterType; label: string; icon: typeof Inbox }[] = [
     { key: "all", label: "Tous", icon: Inbox },
@@ -309,9 +300,8 @@ export default function AdminMessages() {
   ];
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-      <motion.div
-        variants={item}
+    <div className="space-y-6">
+      <div
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
       >
         <div>
@@ -324,9 +314,9 @@ export default function AdminMessages() {
               : `${messages.length} message${messages.length > 1 ? "s" : ""}`}
           </p>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div variants={item}>
+      <div>
         <Card>
           <CardContent className="p-4">
             <div className="relative">
@@ -340,10 +330,10 @@ export default function AdminMessages() {
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
 
       {error && (
-        <motion.div variants={item}>
+        <div>
           <div className="flex items-center gap-3 p-3 rounded-lg border border-destructive/30 bg-destructive/5">
             <AlertCircle className="w-4 h-4 text-destructive shrink-0" />
             <p className="text-sm text-destructive flex-1">{error}</p>
@@ -360,12 +350,12 @@ export default function AdminMessages() {
               Réessayer
             </Button>
           </div>
-        </motion.div>
+        </div>
       )}
 
       <div className="grid grid-cols-1 xl:grid-cols-[220px_1fr_380px] lg:grid-cols-[200px_1fr] gap-4">
         {/* Left sidebar - Filters */}
-        <motion.div variants={item} className="hidden xl:block space-y-1">
+        <div className="hidden xl:block space-y-1">
           <Card>
             <CardContent className="p-2">
               {filterBtns.map(({ key, label, icon: Icon }) => (
@@ -397,15 +387,14 @@ export default function AdminMessages() {
               ))}
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
         {/* Center - Messages list */}
-        <motion.div variants={item} className={cn(mobileDetail && "hidden lg:block")}>
+        <div className={cn(mobileDetail && "hidden lg:block")}>
           <Card className="h-[calc(100vh-280px)] lg:h-[calc(100vh-320px)] overflow-hidden">
             <ScrollArea className="h-full">
               <div className="divide-y divide-border">
-                <AnimatePresence>
-                  {loading ? (
+                                  {loading ? (
                     <div className="flex flex-col items-center justify-center py-16 gap-3">
                       <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
                         <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
@@ -432,13 +421,8 @@ export default function AdminMessages() {
                     </div>
                   ) : (
                     filtered.map((msg) => (
-                      <motion.button
+                      <button
                         key={msg.id}
-                        layout
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.25 }}
                         onClick={() => handleSelect(msg.id)}
                         className={cn(
                           "w-full text-left p-4 transition-colors duration-200 hover:bg-accent/50 relative",
@@ -500,24 +484,19 @@ export default function AdminMessages() {
                             )}
                           </div>
                         </div>
-                      </motion.button>
+                      </button>
                     ))
                   )}
-                </AnimatePresence>
+                
               </div>
             </ScrollArea>
           </Card>
-        </motion.div>
+        </div>
 
         {/* Right - Message detail */}
-        <AnimatePresence mode="wait">
-          {selected && (
-            <motion.div
+                  {selected && (
+            <div
               key={selected.id}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.25 }}
               className={cn(
                 "xl:block",
                 !mobileDetail && "hidden xl:block"
@@ -649,13 +628,8 @@ export default function AdminMessages() {
                     </div>
 
                     {/* Reply section */}
-                    <AnimatePresence>
-                      {replyingTo === selected.id && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.25 }}
+                                          {replyingTo === selected.id && (
+                        <div
                           className="space-y-3"
                         >
                           <Separator />
@@ -692,21 +666,19 @@ export default function AdminMessages() {
                               </Button>
                             </div>
                           </div>
-                        </motion.div>
+                        </div>
                       )}
-                    </AnimatePresence>
+                    
                   </CardContent>
                 </ScrollArea>
               </Card>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
+        
 
         {/* Empty state when no message selected on desktop */}
         {!selected && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+          <div
             className="hidden xl:flex"
           >
             <Card className="h-[calc(100vh-280px)] lg:h-[calc(100vh-320px)] w-full">
@@ -720,9 +692,9 @@ export default function AdminMessages() {
                 </p>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }

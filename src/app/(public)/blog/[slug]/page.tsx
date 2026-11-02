@@ -6,6 +6,11 @@ import { getBlogPostBySlug, getBlogPosts } from "@/lib/content"
 
 export const revalidate = 60
 
+export async function generateStaticParams() {
+  const posts = await getBlogPosts({ publishedOnly: true })
+  return posts.map((post: BlogPost) => ({ slug: post.slug }))
+}
+
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const post = (await getBlogPostBySlug(params.slug)) as BlogPost | null
   if (!post) return { title: "Articles" }

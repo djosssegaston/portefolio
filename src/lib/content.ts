@@ -79,6 +79,19 @@ export function slugify(value: string): string {
 /* ------------------------------------------------------------------ */
 
 /**
+ * TiDB sits far from the app and its TLS handshake can take several seconds.
+ * Once a read fails, retrying on every navigation would make the site crawl
+ * (the connection timeout alone is 30s), so reads are short-circuited to the
+ * bundled static data for a short cooldown. A single success re-enables the DB.
+ */
+const DB_COOLDOWN_MS = 30_000
+let dbDisabledUntil = 0
+
+export function isDatabaseCoolingDown() {
+  return Date.now() < dbDisabledUntil
+}
+
+/**
  * Public reads fall back to the bundled static data if the database is
  * unreachable, so a TiDB outage degrades instead of blanking the site.
  */
@@ -89,9 +102,13 @@ async function withFallback<T>(
   fallback: () => T
 ): Promise<T> {
   return cached(`${label}:${cacheKey}`, async () => {
+    if (isDatabaseCoolingDown()) return fallback()
     try {
-      return await dbRead()
+      const value = await dbRead()
+      dbDisabledUntil = 0
+      return value
     } catch (error) {
+      dbDisabledUntil = Date.now() + DB_COOLDOWN_MS
       console.error(`[content] ${label} read failed, using static fallback:`, error)
       return fallback()
     }
@@ -114,6 +131,7 @@ let cacheVersion = 0
 export function invalidateContent() {
   cacheVersion += 1
   cache.clear()
+  dbDisabledUntil = 0
 }
 
 async function cached<T>(key: string, load: () => Promise<T>): Promise<T> {
@@ -164,7 +182,6 @@ export async function getProjects(opts: { publishedOnly?: boolean; featuredOnly?
     opts.publishedOnly || opts.featuredOnly ? JSON.stringify(opts) : "all",
     async () => ((await query(sql)) as any[]).map(mapProject),
     () => {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { projects } = require("@/lib/data/projects")
       return projects.filter(
         (p: any) => (!publishedOnly || p.status === "published") && (!featuredOnly || p.featured)
@@ -178,7 +195,7 @@ export async function getProjectBySlug(slug: string) {
     "project_by_slug",
     slug,
     async () => {
-      const rows = (await query("SELECT * FROM projects WHERE slug = ? LIMIT 1", [slug])) as any[]
+      const rows = (await query("SELECT * FROM projects WHERE slug = ? AND status = 'published' LIMIT 1", [slug])) as any[]
       return rows.length ? mapProject(rows[0]) : null
     },
     () => require("@/lib/data/projects").projects.find((p: any) => p.slug === slug) ?? null
@@ -362,7 +379,6 @@ async function attachComments(
     ;(grouped[r.post_id] ||= []).push({
       id: r.id,
       name: r.name,
-      email: r.email,
       content: r.content,
       date: toDateOnly(r.date),
       validated: Boolean(r.validated),
@@ -420,7 +436,7 @@ export async function getBlogPostBySlug(slug: string) {
     "blog_post_by_slug",
     slug,
     async () => {
-      const rows = (await query("SELECT * FROM blog_posts WHERE slug = ? LIMIT 1", [slug])) as any[]
+      const rows = (await query("SELECT * FROM blog_posts WHERE slug = ? AND published = 1 LIMIT 1", [slug])) as any[]
       if (!rows.length) return null
       const comments = await attachComments([rows[0].id])
       return mapBlogPost(rows[0], comments[rows[0].id] ?? [])
@@ -515,23 +531,32 @@ export function mapEvent(row: any) {
   }
 }
 
-export async function getEvents(opts: { status?: string; featuredOnly?: boolean } = {}) {
-  const { status, featuredOnly = false } = opts
+export async function getEvents(
+  opts: { status?: string; featuredOnly?: boolean; includeDrafts?: boolean } = {}
+) {
+  const { status, featuredOnly = false, includeDrafts = false } = opts
   const where: string[] = []
   const params: any[] = []
   if (status) {
     where.push("status = ?")
     params.push(status)
+  } else if (!includeDrafts) {
+    where.push("status <> 'draft'")
   }
   if (featuredOnly) where.push("featured = 1")
   const sql = `SELECT * FROM event_trainings ${where.length ? `WHERE ${where.join(" AND ")}` : ""} ORDER BY start_date DESC`
   return withFallback(
     "events",
-    opts.status || opts.featuredOnly ? JSON.stringify(opts) : "all",
+    JSON.stringify(opts),
     async () => ((await query(sql, params)) as any[]).map(mapEvent),
     () => {
       const { events } = require("@/lib/data/events")
-      return events.filter((e: any) => (!status || e.status === status) && (!featuredOnly || e.featured))
+      return events.filter(
+        (e: any) =>
+          (!status || e.status === status) &&
+          (status || includeDrafts || e.status !== "draft") &&
+          (!featuredOnly || e.featured)
+      )
     }
   )
 }
@@ -541,7 +566,7 @@ export async function getEventBySlug(slug: string) {
     "event_by_slug",
     slug,
     async () => {
-      const rows = (await query("SELECT * FROM event_trainings WHERE slug = ? LIMIT 1", [slug])) as any[]
+      const rows = (await query("SELECT * FROM event_trainings WHERE slug = ? AND status <> 'draft' LIMIT 1", [slug])) as any[]
       return rows.length ? mapEvent(rows[0]) : null
     },
     () => require("@/lib/data/events").events.find((e: any) => e.slug === slug) ?? null
@@ -660,6 +685,9 @@ export async function getContentStats() {
 /** Public-safe stats for the Hero section (driven by the DB, not hardcoded). */
 export async function getPublicStats() {
   return cached("public_stats", async () => {
+    if (isDatabaseCoolingDown()) {
+      return { publishedProjects: 0, experienceCount: 0, certificationCount: 0, publishedArticles: 0 }
+    }
     try {
       const [rows] = await Promise.all([
         queryRaw(
@@ -671,6 +699,7 @@ export async function getPublicStats() {
         ),
       ])
       const r = (rows as any[])[0] ?? {}
+      dbDisabledUntil = 0
       return {
         publishedProjects: Number(r.publishedProjects ?? 0),
         experienceCount: Number(r.experienceCount ?? 0),
@@ -678,6 +707,7 @@ export async function getPublicStats() {
         publishedArticles: Number(r.publishedArticles ?? 0),
       }
     } catch (error) {
+      dbDisabledUntil = Date.now() + DB_COOLDOWN_MS
       console.error("[content] public stats failed:", error)
       return { publishedProjects: 0, experienceCount: 0, certificationCount: 0, publishedArticles: 0 }
     }

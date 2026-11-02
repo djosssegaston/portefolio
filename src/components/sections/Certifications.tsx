@@ -1,18 +1,17 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Award, ExternalLink, Calendar } from "lucide-react"
-import { cn } from "@/lib/utils"
-import type { Certification } from "@/types"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { certifications as staticCertifications } from "@/lib/data/certifications"
+import { Award, ExternalLink, Calendar } from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { Certification } from "@/types";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { certifications as staticCertifications } from "@/lib/data/certifications";
 
 function formatFrenchDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("fr-FR", {
     month: "long",
     year: "numeric",
-  })
+  });
 }
 
 const iconColors = [
@@ -26,54 +25,44 @@ const iconColors = [
   "text-orange-500 bg-orange-500/10",
   "text-fuchsia-500 bg-fuchsia-500/10",
   "text-teal-500 bg-teal-500/10",
-]
+];
 
-export default function Certifications({ certifications = staticCertifications }: { certifications?: Certification[] }) {
+export default function Certifications({
+  certifications = staticCertifications,
+}: {
+  certifications?: Certification[];
+}) {
   return (
     <section
       id="certifications"
-      className="relative py-24 sm:py-32 bg-card"
+      className="section-shell relative bg-white"
       aria-label="Certifications"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="mb-16 text-center"
-        >
-          <div className="section-label mx-auto w-fit">
-            Certifications
-          </div>
-          <h2 className="section-heading mt-4">
+        <div data-reveal className="mb-14 text-center">
+          <div className="section-label mx-auto w-fit">Certifications</div>
+          <h2 className="section-heading mt-5">
             <span className="gradient-text">Expertise</span> Certifiée
           </h2>
           <p className="section-desc">
             Des certifications qui attestent de mon expertise technique
           </p>
-        </motion.div>
+        </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div data-reveal-group className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {certifications.map((cert, index) => (
-            <motion.div
-              key={cert.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.4, delay: index * 0.03 }}
-            >
-              <div className="group relative h-full rounded-lg border border-border bg-card p-5">
+            <div key={cert.id} data-reveal-item className="h-full">
+              <div className="surface surface-interactive group flex h-full flex-col p-5">
                 <div
                   className={cn(
-                    "mb-4 flex h-12 w-12 items-center justify-center rounded-xl",
+                    "mb-4 flex h-12 w-12 items-center justify-center rounded-2xl transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-105",
                     iconColors[index % iconColors.length],
                   )}
                 >
                   <Award className="h-6 w-6" />
                 </div>
 
-                <h3 className="font-heading text-base font-bold text-foreground">
+                <h3 className="font-heading text-base font-semibold text-foreground">
                   {cert.title}
                 </h3>
 
@@ -81,26 +70,24 @@ export default function Certifications({ certifications = staticCertifications }
                   {cert.issuer}
                 </p>
 
-                <div className="mt-2 flex items-center gap-1.5 text-xs text-secondary">
+                <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-secondary">
                   <Calendar className="h-3.5 w-3.5" />
                   <span>{formatFrenchDate(cert.date)}</span>
                   {cert.expiryDate && (
-                    <span>
-                      &middot; Expire {formatFrenchDate(cert.expiryDate)}
-                    </span>
+                    <span>&middot; Expire {formatFrenchDate(cert.expiryDate)}</span>
                   )}
                 </div>
 
-                <p className="mt-3 flex-1 text-sm leading-relaxed text-secondary">
+                <p className="mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-secondary">
                   {cert.description}
                 </p>
 
-                <div className="mt-4 flex flex-wrap items-center gap-2">
+                <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4">
                   {cert.credentialUrl && (
                     <Button
                       variant="outline"
                       size="sm"
-                      className="gap-1.5 text-xs"
+                      className="gap-1.5 rounded-full text-xs"
                       asChild
                     >
                       <a
@@ -116,16 +103,16 @@ export default function Certifications({ certifications = staticCertifications }
                   )}
                   <Badge
                     variant="secondary"
-                    className="text-xs font-normal"
+                    className="border-0 bg-slate-100 text-xs font-normal text-secondary"
                   >
                     {cert.issuer}
                   </Badge>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
     </section>
-  )
+  );
 }

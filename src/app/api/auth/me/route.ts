@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { verifyToken, findAdminById } from "@/lib/auth"
 
+export const dynamic = "force-dynamic"
+
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization")
   if (!authHeader?.startsWith("Bearer ")) {
@@ -8,13 +10,13 @@ export async function GET(req: NextRequest) {
   }
 
   const decoded = verifyToken(authHeader.slice(7))
-  if (!decoded) {
+  if (!decoded || decoded.purpose !== "access") {
     return NextResponse.json({ error: "Session expirée" }, { status: 401 })
   }
 
   const admin = await findAdminById(decoded.id)
-  if (!admin) {
-    return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 401 })
+  if (!admin || !admin.active) {
+    return NextResponse.json({ error: "Utilisateur introuvable ou désactivé" }, { status: 401 })
   }
 
   return NextResponse.json({ admin })

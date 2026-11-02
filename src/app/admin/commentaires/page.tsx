@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
 import { MessageSquare, Check, X, Trash2, RotateCcw, ExternalLink, Loader2, AlertTriangle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -136,7 +135,7 @@ export default function AdminCommentaires() {
 
   return (
     <div className="space-y-6">
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+      <div>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Commentaires</h1>
@@ -154,7 +153,7 @@ export default function AdminCommentaires() {
             </Button>
           )}
         </div>
-      </motion.div>
+      </div>
 
       {error && (
         <Card className="border-destructive/50 bg-destructive/5">

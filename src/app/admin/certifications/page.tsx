@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   Plus,
@@ -124,19 +123,11 @@ export default function AdminCertifications() {
     return new Date(expiryDate) < new Date();
   };
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.05 } },
-  };
 
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.35 } },
-  };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-      <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-heading font-bold text-foreground">
             Gestion des Certifications
@@ -149,9 +140,9 @@ export default function AdminCertifications() {
           <Plus className="w-4 h-4" />
           Ajouter une certification
         </Button>
-      </motion.div>
+      </div>
 
-      <motion.div variants={item}>
+      <div>
         <Card>
           <CardContent className="p-4">
             <div className="relative">
@@ -165,15 +156,11 @@ export default function AdminCertifications() {
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
 
-      <AnimatePresence mode="wait">
-        {filtered.length === 0 ? (
-          <motion.div
+              {filtered.length === 0 ? (
+          <div
             key="empty"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
           >
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-16 gap-3">
@@ -192,19 +179,14 @@ export default function AdminCertifications() {
                 )}
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         ) : (
-          <motion.div key="list" variants={container} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <AnimatePresence>
-              {filtered.map((cert) => {
+          <div key="list" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {filtered.map((cert) => {
                 const expired = isExpired(cert.expiryDate);
                 return (
-                  <motion.div
+                  <div
                     key={cert.id}
-                    layout
-                    variants={item}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.3 }}
                   >
                     <Card className="group h-full hover:shadow-lg transition-all duration-300 hover:border-primary/20">
                       <CardContent className="p-5 flex flex-col h-full">
@@ -277,13 +259,13 @@ export default function AdminCertifications() {
                         )}
                       </CardContent>
                     </Card>
-                  </motion.div>
+                  </div>
                 );
               })}
-            </AnimatePresence>
-          </motion.div>
+            
+          </div>
         )}
-      </AnimatePresence>
+      
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
@@ -344,6 +326,6 @@ export default function AdminCertifications() {
           </div>
         </DialogContent>
       </Dialog>
-    </motion.div>
+    </div>
   );
 }

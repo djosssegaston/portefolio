@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server"
 import { query } from "@/lib/db"
 import { newId } from "@/lib/content"
 import { hashPassword } from "@/lib/auth"
-import { requireAdmin, unauthorized } from "@/lib/crud"
+import { requireSuperAdmin, unauthorized } from "@/lib/crud"
 import { USER_ROLES, SELECT_USER, mapUser, validEmail, countSuperAdmins } from "@/lib/users"
 
 export const dynamic = "force-dynamic"
 
 export async function GET(req: NextRequest) {
-  const auth = requireAdmin(req)
+  const auth = await requireSuperAdmin(req)
   if ("error" in auth) return unauthorized(auth)
   try {
     const rows = (await query(`${SELECT_USER} ORDER BY created_at ASC`)) as any[]
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = requireAdmin(req)
+  const auth = await requireSuperAdmin(req)
   if ("error" in auth) return unauthorized(auth)
   try {
     const body = await req.json()
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const auth = requireAdmin(req)
+  const auth = await requireSuperAdmin(req)
   if ("error" in auth) return unauthorized(auth)
   try {
     const { ids, active } = await req.json()

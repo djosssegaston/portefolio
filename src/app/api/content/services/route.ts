@@ -4,6 +4,8 @@ import { listResource, createResource, requireAdmin, unauthorized } from "@/lib/
 export const dynamic = "force-dynamic"
 
 export async function GET(req: NextRequest) {
+  const auth = await requireAdmin(req)
+  if ("error" in auth) return unauthorized(auth)
   try {
     const data = await listResource("services", req.nextUrl.searchParams)
     return NextResponse.json({ data })
@@ -14,7 +16,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = requireAdmin(req)
+  const auth = await requireAdmin(req)
   if ("error" in auth) return unauthorized(auth)
   try {
     const body = await req.json()

@@ -5,7 +5,7 @@ import { requireAdmin, unauthorized } from "@/lib/crud"
 export const dynamic = "force-dynamic"
 
 export async function GET(req: NextRequest) {
-  const auth = requireAdmin(req)
+  const auth = await requireAdmin(req)
   if ("error" in auth) return unauthorized(auth)
   try {
     const [content, publicStats] = await Promise.all([getContentStats(), getPublicStats()])

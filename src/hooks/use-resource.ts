@@ -40,6 +40,14 @@ function baseUrl(resource: string) {
 }
 
 /**
+ * Navigating between admin screens used to wait for a full network round-trip
+ * every time. Visited collections are kept for a short window so the screen
+ * renders instantly from cache and then revalidates in the background.
+ */
+const CACHE_TTL_MS = 30_000
+const resourceCache = new Map<string, { data: any[]; ts: number }>()
+
+/**
  * Client-side CRUD over the JSON API, backed by MySQL/TiDB.
  * Handles auth headers, error toasts and local state synchronisation.
  */
@@ -48,12 +56,20 @@ export function useResource<T extends { id: string }>(
   query: Record<string, string> = {}
 ): ResourceApi<T> {
   const { toast } = useToast()
-  const [items, setItems] = useState<T[]>([])
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const queryKey = JSON.stringify(query)
   const base = baseUrl(resource)
+  const cacheKey = `${base}${queryKey}`
+  const initialCache = resourceCache.get(cacheKey)
+  const hasCache = Boolean(initialCache)
+  const hasFreshCache =
+    hasCache && Date.now() - (initialCache?.ts ?? 0) < CACHE_TTL_MS
+
+  const [items, setItems] = useState<T[]>(
+    () => (hasCache ? (initialCache?.data as T[]) : [])
+  )
+  const [loading, setLoading] = useState(!hasFreshCache)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const mounted = useRef(true)
 
   useEffect(() => {
@@ -68,8 +84,19 @@ export function useResource<T extends { id: string }>(
       setError(null)
       const qs = new URLSearchParams(queryKey ? JSON.parse(queryKey) : {})
       const suffix = qs.toString() ? `?${qs}` : ""
-      const res = await fetch(`${base}${suffix}`, { cache: "no-store" })
+      const res = await fetch(`${base}${suffix}`, {
+        cache: "no-store",
+        headers: authHeaders(),
+      })
       const payload = await parse(res)
+      if (res.status === 401) {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("admin_token")
+          localStorage.removeItem("admin_user")
+          window.location.href = "/admin/login"
+        }
+        return
+      }
       if (!res.ok) throw new Error(payload?.error ?? "Erreur de chargement")
       if (mounted.current) setItems(payload.data ?? [])
     } catch (e: any) {
@@ -87,9 +114,14 @@ export function useResource<T extends { id: string }>(
   }, [base, queryKey, toast])
 
   useEffect(() => {
-    setLoading(true)
+    if (!resourceCache.has(cacheKey)) setLoading(true)
     refresh()
-  }, [refresh])
+  }, [refresh, cacheKey])
+
+  useEffect(() => {
+    if (loading) return
+    resourceCache.set(cacheKey, { data: items, ts: Date.now() })
+  }, [items, loading, cacheKey])
 
   const request = useCallback(
     async (method: string, path: string, body?: any) => {

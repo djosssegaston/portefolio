@@ -6,6 +6,11 @@ import { getProjectBySlug, getProjects } from "@/lib/content"
 
 export const revalidate = 60
 
+export async function generateStaticParams() {
+  const projects = await getProjects({ publishedOnly: true })
+  return projects.map((project: Project) => ({ slug: project.slug }))
+}
+
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const project = await getProjectBySlug(params.slug)
   if (!project) return { title: "Projets" }

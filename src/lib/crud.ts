@@ -37,15 +37,46 @@ export interface Resource {
 
 export type AdminIdentity = { id: string; email: string; role: string }
 
-export function requireAdmin(
-  req: NextRequest
-): { error: string; status: 401 } | { user: AdminIdentity } {
+export type AuthError = { error: string; status: 401 | 403 }
+export type AuthResult = AuthError | { user: AdminIdentity }
+
+const ALL_ADMIN_ROLES = ["super_admin", "admin", "editor"] as const
+
+/**
+ * Verifies the bearer token, rejects short-lived 2FA challenge tokens, then
+ * reloads the account so deactivated users and role changes take effect
+ * immediately instead of waiting for the 24h token to expire.
+ */
+export async function requireAdmin(
+  req: NextRequest,
+  allowedRoles: readonly string[] = ALL_ADMIN_ROLES
+): Promise<AuthResult> {
   const header = req.headers.get("authorization") || ""
   const token = header.startsWith("Bearer ") ? header.slice(7) : null
   if (!token) return { error: "Non authentifié", status: 401 }
+
   const payload = verifyToken(token)
-  if (!payload) return { error: "Session expirée ou invalide", status: 401 }
-  return { user: payload }
+  if (!payload || payload.purpose !== "access") {
+    return { error: "Session expirée ou invalide", status: 401 }
+  }
+
+  const rows = (await query(
+    "SELECT id, email, role, active FROM admin_users WHERE id = ? LIMIT 1",
+    [payload.id]
+  )) as any[]
+  const account = rows[0]
+  if (!account || !account.active) {
+    return { error: "Compte désactivé ou introuvable", status: 401 }
+  }
+  if (!allowedRoles.includes(account.role)) {
+    return { error: "Accès refusé", status: 403 }
+  }
+
+  return { user: { id: account.id, email: account.email, role: account.role } }
+}
+
+export function requireSuperAdmin(req: NextRequest) {
+  return requireAdmin(req, ["super_admin"])
 }
 
 export function unauthorized(res: { error: string; status: number }) {
@@ -303,6 +334,7 @@ export const RESOURCES: Record<string, Resource> = {
       require("@/lib/content").getEvents({
         status: q.get("status") || undefined,
         featuredOnly: q.get("featured") === "1",
+        includeDrafts: true,
       }),
     columns: {
       title: c("title", "text", true),

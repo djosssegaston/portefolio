@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion } from "framer-motion";
 import {
   Upload,
   Trash2,
@@ -31,7 +30,7 @@ export default function AdminImages() {
 
   const loadImages = useCallback(async () => {
     try {
-      const res = await fetch("/api/images");
+      const res = await fetch("/api/images", { headers: { Authorization: `Bearer ${localStorage.getItem("admin_token")}` } });
       const data = await res.json();
       setImages(data.images || []);
     } catch {
@@ -52,7 +51,7 @@ export default function AdminImages() {
     formData.append("file", file);
 
     try {
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const res = await fetch("/api/upload", { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("admin_token")}` }, body: formData });
       if (!res.ok) throw new Error("Upload failed");
 
       toast({ title: "Image uploadée", description: `${file.name} a été ajoutée.` });
@@ -78,19 +77,11 @@ export default function AdminImages() {
     return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
   };
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.06 } },
-  };
 
-  const item = {
-    hidden: { opacity: 0, y: 16 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.35 } },
-  };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-      <motion.div variants={item} className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl lg:text-3xl font-heading font-bold text-foreground">
             Gestion des Images
@@ -112,10 +103,10 @@ export default function AdminImages() {
             {uploading ? "Upload..." : "Uploader une image"}
           </Button>
         </div>
-      </motion.div>
+      </div>
 
       {images.length === 0 ? (
-        <motion.div variants={item}>
+        <div>
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-16">
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
@@ -133,13 +124,12 @@ export default function AdminImages() {
               </Button>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       ) : (
-        <motion.div variants={item} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {images.map((img, index) => (
-            <motion.div
+            <div
               key={img.name}
-              variants={item}
               className="group relative rounded-xl overflow-hidden border border-border bg-card hover:shadow-lg transition-all"
             >
               <div className="aspect-square overflow-hidden">
@@ -178,10 +168,10 @@ export default function AdminImages() {
                 <p className="text-xs truncate text-muted-foreground">{img.name}</p>
                 <p className="text-[10px] text-muted-foreground/60">{formatSize(img.size)}</p>
               </div>
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
+        </div>
       )}
-    </motion.div>
+    </div>
   );
 }

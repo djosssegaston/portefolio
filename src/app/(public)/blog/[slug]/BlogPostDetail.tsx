@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
-import { motion } from "framer-motion"
+import { useEffect, useState } from "react"
 import Link from "next/link"
+import PageHero from "@/components/layout/PageHero"
 import {
   ArrowLeft,
   Calendar,
@@ -80,7 +80,13 @@ export default function BlogPostPage({ post, related }: { post: BlogPost; relate
   const [commentEmail, setCommentEmail] = useState("")
   const [commentContent, setCommentContent] = useState("")
   const [isSending, setIsSending] = useState(false)
+  const [shareUrl, setShareUrl] = useState("")
   const { toast } = useToast()
+
+  useEffect(() => {
+    setShareUrl(window.location.href)
+  }, [])
+
 
   async function submitComment(e: React.FormEvent) {
     e.preventDefault()
@@ -129,7 +135,6 @@ export default function BlogPostPage({ post, related }: { post: BlogPost; relate
   }
 
   const validatedComments = post.comments.filter((c) => c.validated)
-  const shareUrl = typeof window !== "undefined" ? window.location.href : ""
   const shareText = encodeURIComponent(post.title)
 
   const shareLinks = [
@@ -155,71 +160,51 @@ export default function BlogPostPage({ post, related }: { post: BlogPost; relate
     },
   ]
 
-  const gradient = gradients[
-    post.slug.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0) % gradients.length
-  ]
-
   return (
-    <div className="pt-20">
-      <div className={cn("relative py-20 bg-gradient-to-br", gradient)}>
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 relative">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Link
-              href="/blog"
-              className="inline-flex items-center text-white/80 hover:text-white transition-colors mb-6"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Retour au blog
-            </Link>
-            <Badge className="mb-4 bg-white/20 text-white border-white/30 hover:bg-white/30">
-              {post.category}
-            </Badge>
-            <h1 className="font-heading text-3xl md:text-5xl font-bold text-white mb-6">
-              {post.title}
-            </h1>
-            <div className="flex flex-wrap items-center gap-6 text-sm text-white/80">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10 border-2 border-white/30">
-                  <AvatarImage src={post.authorAvatar} alt={post.author} />
-                  <AvatarFallback className="text-sm bg-white/20 text-white">
-                    {getInitials(post.author)}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium text-white">{post.author}</p>
-                  <div className="flex items-center gap-3 text-xs text-white/70">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3.5 w-3.5" />
-                      {formatDate(post.date)}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5" />
-                      {post.readTime} min de lecture
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+    <div>
+      <PageHero
+        eyebrow={post.category}
+        title={post.title}
+        description={post.excerpt}
+        breadcrumb={[
+          { label: "Accueil", href: "/" },
+          { label: "Blog", href: "/blog" },
+          { label: post.title },
+        ]}
+        variant="waves"
+      >
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 backdrop-blur-md">
+            <Avatar className="h-8 w-8 border border-white/20">
+              <AvatarImage src={post.authorAvatar} alt={post.author} />
+              <AvatarFallback className="bg-white/10 text-xs text-white">
+                {getInitials(post.author)}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-xs font-medium text-slate-200">{post.author}</span>
+          </div>
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-medium text-slate-300 backdrop-blur-md">
+            <Calendar className="h-3.5 w-3.5 text-cyan-300" />
+            {formatDate(post.date)}
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-medium text-slate-300 backdrop-blur-md">
+            <Clock className="h-3.5 w-3.5 text-cyan-300" />
+            {post.readTime} min de lecture
+          </span>
         </div>
-      </div>
+      </PageHero>
 
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-12">
-        <motion.article
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+        <article
           className="prose prose-lg max-w-none"
+          data-reveal="up"
         >
           {formatContent(post.content)}
-        </motion.article>
+        </article>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
+        <div
           className="mt-12 flex flex-wrap items-center gap-3"
+          data-reveal="up"
         >
           <Tag className="h-4 w-4 text-muted-foreground" />
           {post.tags.map((tag) => (
@@ -227,14 +212,11 @@ export default function BlogPostPage({ post, related }: { post: BlogPost; relate
               {tag}
             </Badge>
           ))}
-        </motion.div>
+        </div>
 
         <Separator className="my-12" />
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+        <div
         >
           <div className="flex items-center gap-3 mb-6">
             <Share2 className="h-5 w-5 text-muted-foreground" />
@@ -254,14 +236,11 @@ export default function BlogPostPage({ post, related }: { post: BlogPost; relate
               </Button>
             ))}
           </div>
-        </motion.div>
+        </div>
 
         <Separator className="my-12" />
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
+        <div
         >
           <div className="flex items-center gap-3 mb-8">
             <MessageSquare className="h-5 w-5 text-muted-foreground" />
@@ -346,7 +325,7 @@ export default function BlogPostPage({ post, related }: { post: BlogPost; relate
               </form>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       </div>
 
       {related.length > 0 && (

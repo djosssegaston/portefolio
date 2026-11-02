@@ -1,6 +1,5 @@
 "use client"
 
-import { motion } from "framer-motion"
 import {
   AlertTriangle,
   Clock,
@@ -97,11 +96,7 @@ function ProblemSolutionCard({ pair, index }: { pair: ProblemSolutionPair; index
   const SolutionIcon = pair.solution.icon
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
+    <div
       className="group relative cursor-default"
     >
       <div className="relative overflow-hidden rounded-xl border border-border bg-card p-6 transition-colors hover:border-accent/20 sm:p-8">
@@ -137,7 +132,7 @@ function ProblemSolutionCard({ pair, index }: { pair: ProblemSolutionPair; index
           <p className="mt-2 text-sm leading-relaxed text-secondary">{pair.solution.description}</p>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -149,11 +144,7 @@ export default function ProblemsSolutions() {
       aria-label="Problèmes et solutions"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
+        <div
           className="mb-16 text-center"
         >
           <span className="section-label">
@@ -165,7 +156,7 @@ export default function ProblemsSolutions() {
           <p className="section-desc">
             Chaque défi est une opportunité d&apos;innovation. Je transforme vos contraintes en avantages concurrentiels.
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {pairs.map((pair, index) => (

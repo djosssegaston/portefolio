@@ -28,7 +28,7 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-  const auth = requireAdmin(req)
+  const auth = await requireAdmin(req, ["super_admin", "admin"])
   if ("error" in auth) return unauthorized(auth)
   try {
     const body = await req.json()

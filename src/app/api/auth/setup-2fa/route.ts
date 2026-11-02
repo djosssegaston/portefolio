@@ -1,81 +1,71 @@
 import { NextRequest, NextResponse } from "next/server"
-import { verifyToken, findAdminById, generateTwoFactorSecret, generateTwoFactorOtpUrl, verifyTwoFactorToken } from "@/lib/auth"
+import { generateTwoFactorSecret, generateTwoFactorOtpUrl, verifyTwoFactorToken } from "@/lib/auth"
 import { getPool } from "@/lib/db"
+import { requireAdmin, unauthorized } from "@/lib/crud"
+
+export const dynamic = "force-dynamic"
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAdmin(req)
+  if ("error" in auth) return unauthorized(auth)
+
   try {
-    const authHeader = req.headers.get("authorization")
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
-    }
-
-    const decoded = verifyToken(authHeader.slice(7))
-    if (!decoded) {
-      return NextResponse.json({ error: "Session expirée" }, { status: 401 })
-    }
-
     const { action, code } = await req.json()
+    const pool = await getPool()
 
     if (action === "generate") {
       const secret = generateTwoFactorSecret()
-      const otpauthUrl = generateTwoFactorOtpUrl(secret.base32, decoded.email)
+      const otpauthUrl = generateTwoFactorOtpUrl(secret.base32, auth.user.email)
 
-      return NextResponse.json({
-        secret: secret.base32,
-        otpauthUrl,
-      })
+      // Persist immediately so the next request (enable) can verify the code.
+      await pool.execute(
+        "UPDATE admin_users SET two_factor_secret = ?, two_factor_enabled = 0 WHERE id = ?",
+        [secret.base32, auth.user.id]
+      )
+
+      return NextResponse.json({ secret: secret.base32, otpauthUrl })
     }
 
     if (action === "enable") {
-      const pool = await getPool()
       const [rows]: any = await pool.execute(
         "SELECT two_factor_secret FROM admin_users WHERE id = ?",
-        [decoded.id]
+        [auth.user.id]
       )
       const secret = rows[0]?.two_factor_secret
       if (!secret) {
         return NextResponse.json({ error: "Générez d'abord le secret" }, { status: 400 })
       }
-
-      const valid = verifyTwoFactorToken(secret, code)
-      if (!valid) {
+      if (!verifyTwoFactorToken(secret, String(code ?? "").trim())) {
         return NextResponse.json({ error: "Code invalide" }, { status: 400 })
       }
 
-      await pool.execute(
-        "UPDATE admin_users SET two_factor_enabled = 1 WHERE id = ?",
-        [decoded.id]
-      )
-
+      await pool.execute("UPDATE admin_users SET two_factor_enabled = 1 WHERE id = ?", [auth.user.id])
       return NextResponse.json({ success: true })
     }
 
     if (action === "disable") {
-      const pool = await getPool()
       const [rows]: any = await pool.execute(
-        "SELECT two_factor_secret FROM admin_users WHERE id = ?",
-        [decoded.id]
+        "SELECT two_factor_secret, two_factor_enabled FROM admin_users WHERE id = ?",
+        [auth.user.id]
       )
-      const secret = rows[0]?.two_factor_secret
-      if (!secret) {
+      const row = rows[0]
+      if (!row?.two_factor_enabled) {
         return NextResponse.json({ error: "2FA non configuré" }, { status: 400 })
       }
-
-      const valid = verifyTwoFactorToken(secret, code)
-      if (!valid) {
+      if (!verifyTwoFactorToken(row.two_factor_secret, String(code ?? "").trim())) {
         return NextResponse.json({ error: "Code invalide" }, { status: 400 })
       }
 
       await pool.execute(
         "UPDATE admin_users SET two_factor_enabled = 0, two_factor_secret = '' WHERE id = ?",
-        [decoded.id]
+        [auth.user.id]
       )
-
       return NextResponse.json({ success: true })
     }
 
     return NextResponse.json({ error: "Action invalide" }, { status: 400 })
-  } catch (error: any) {
+  } catch (error) {
+    console.error("[api/auth/setup-2fa]", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }

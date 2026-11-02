@@ -5,7 +5,9 @@ export const dynamic = "force-dynamic"
 
 type Ctx = { params: { id: string } }
 
-export async function GET(_req: NextRequest, { params }: Ctx) {
+export async function GET(req: NextRequest, { params }: Ctx) {
+  const auth = await requireAdmin(req)
+  if ("error" in auth) return unauthorized(auth)
   try {
     const data = await getResourceById("services", params.id)
     if (!data) return NextResponse.json({ error: "Introuvable" }, { status: 404 })
@@ -17,7 +19,7 @@ export async function GET(_req: NextRequest, { params }: Ctx) {
 }
 
 export async function PUT(req: NextRequest, { params }: Ctx) {
-  const auth = requireAdmin(req)
+  const auth = await requireAdmin(req)
   if ("error" in auth) return unauthorized(auth)
   try {
     const body = await req.json()
@@ -35,7 +37,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
 }
 
 export async function DELETE(req: NextRequest, { params }: Ctx) {
-  const auth = requireAdmin(req)
+  const auth = await requireAdmin(req)
   if ("error" in auth) return unauthorized(auth)
   try {
     const result = await deleteResource("services", params.id)
@@ -48,7 +50,7 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
 }
 
 export async function POST(req: NextRequest, { params }: Ctx) {
-  const auth = requireAdmin(req)
+  const auth = await requireAdmin(req)
   if ("error" in auth) return unauthorized(auth)
   try {
     const body = await req.json()

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { query } from "@/lib/db"
 import { hashPassword } from "@/lib/auth"
-import { requireAdmin, unauthorized } from "@/lib/crud"
+import { requireSuperAdmin, unauthorized } from "@/lib/crud"
 import { USER_ROLES, SELECT_USER, mapUser, validEmail, countSuperAdmins } from "@/lib/users"
 
 export const dynamic = "force-dynamic"
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = requireAdmin(req)
+  const auth = await requireSuperAdmin(req)
   if ("error" in auth) return unauthorized(auth)
   const rows = (await query(`${SELECT_USER} WHERE id = ?`, [params.id])) as any[]
   if (!rows.length) return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 })
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = requireAdmin(req)
+  const auth = await requireSuperAdmin(req)
   if ("error" in auth) return unauthorized(auth)
   try {
     const current = (await query("SELECT * FROM admin_users WHERE id = ?", [params.id])) as any[]
@@ -89,7 +89,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = requireAdmin(req)
+  const auth = await requireSuperAdmin(req)
   if ("error" in auth) return unauthorized(auth)
   try {
     if (params.id === auth.user.id) {
