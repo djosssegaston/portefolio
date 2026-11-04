@@ -1,109 +1,60 @@
 import { SiteConfig } from "@/types";
+import { journey, principles, profile, vision } from "@/app/(public)/a-propos/about-data";
+
+const timelineType = (type: string): "work" | "education" | "achievement" => {
+  if (type === "education") return "education";
+  if (type === "work" || type === "internship") return "work";
+  return "achievement";
+};
 
 export const siteConfig: SiteConfig = {
   name: "DJOSSE Adechina",
-  fullName: "DJOSSE Adechina Gaston",
-  title: "Développeur Web & Consultant Digital",
+  fullName: profile.fullName,
+  title: profile.role,
   description:
-    "Développeur web, développeur d'applications et consultant digital spécialisé dans la création de solutions numériques innovantes, de plateformes SaaS et d'applications modernes.",
+    "Développeur full-stack diplômé en Systèmes Informatiques et Logiciels. Conception et développement de sites web, plateformes métier, API REST et intégrations de paiement.",
   keywords: [
+    "développeur full-stack",
     "développeur web",
-    "consultant digital",
-    "développeur applications",
-    "react",
-    "next.js",
-    "typescript",
-    "node.js",
     "laravel",
+    "react",
+    "php",
+    "javascript",
+    "mysql",
+    "postgresql",
+    "api rest",
+    "bénin",
+    "porto-novo",
     "portfolio",
-    "développeur freelance",
-    "création site web",
   ],
-  logo: "/images/logo.svg",
+  logo: "/images/avatars/logo.png",
   favicon: "/images/favicon.ico",
   ogImage: "/images/og-image.jpg",
-  avatar: "",
-  email: "contact@djosse-adechina.com",
-  phone: "+229 01 23 45 67",
-  location: "Cotonou, Bénin",
+  avatar: "/images/avatar.jpg",
+  email: profile.email,
+  phone: profile.phone,
+  location: profile.location,
   socialLinks: [
-    { name: "LinkedIn", url: "https://linkedin.com/in/djosse-adechina", icon: "Linkedin" },
-    { name: "GitHub", url: "https://github.com/djosse-adechina", icon: "Github" },
-    { name: "WhatsApp", url: "https://wa.me/22901234567", icon: "MessageCircle" },
-    { name: "Facebook", url: "https://facebook.com/djosse-adechina", icon: "Facebook" },
-    { name: "X", url: "https://x.com/djosse_adechina", icon: "Twitter" },
-    { name: "Email", url: "mailto:contact@djosse-adechina.com", icon: "Mail" },
+    { name: "LinkedIn", url: profile.linkedin, icon: "Linkedin" },
+    { name: "GitHub", url: profile.github, icon: "Github" },
+    { name: "Email", url: `mailto:${profile.email}`, icon: "Mail" },
   ],
   stats: [
-    { label: "Projets réalisés", value: 5, suffix: "+", icon: "Briefcase" },
-    { label: "Technologies maîtrisées", value: 30, suffix: "+", icon: "Code2" },
-    { label: "Années d'expérience", value: 1, suffix: "+", icon: "Calendar" },
-    { label: "Clients satisfaits", value: 25, suffix: "+", icon: "Users" },
+    { label: "Projets présentés", value: 4, suffix: "", icon: "Folder" },
+    { label: "Expériences professionnelles", value: 2, suffix: "", icon: "Briefcase" },
+    { label: "Certificat", value: 1, suffix: "", icon: "Award" },
+    { label: "Groupes de compétences", value: 7, suffix: "", icon: "Code2" },
   ],
   about: {
-    presentation: `Développeur passionné et consultant digital avec plus d'un an d'expérience dans la création de solutions numériques innovantes. Ma mission est de transformer des idées ambitieuses en produits digitaux performants, élégants et intuitifs.
-
-Spécialisé en développement web full-stack, architecture d'applications et stratégie digitale, j'accompagne les entreprises et entrepreneurs dans leur transformation numérique, de la conception à la réalisation.
-
-Mon approche allie excellence technique, design thinking et vision stratégique pour livrer des solutions qui dépassent les attentes et créent un impact durable.`,
-    vision: `Devenir un leader dans l'innovation numérique en Afrique, en créant des solutions technologiques qui résolvent des problèmes concrets et contribuent au développement économique et social du continent.`,
-    values: [
-      "Excellence technique et qualité irréprochable",
-      "Innovation et créativité au service du résultat",
-      "Intégrité et transparence dans chaque projet",
-      "Engagement envers la satisfaction client",
-      "Apprentissage continu et veille technologique",
-    ],
-    timeline: [
-      {
-        year: "2016",
-        title: "Début du parcours",
-        description: "Obtention de ma licence en informatique et développement de mes premières applications web.",
-        type: "education",
-      },
-      {
-        year: "2017",
-        title: "Premier poste en développement",
-        description: "Intégration d'une agence digitale comme développeur junior. Découverte des frameworks modernes.",
-        type: "work",
-      },
-      {
-        year: "2019",
-        title: "Spécialisation Full-Stack",
-        description: "Promotion au poste de développeur full-stack. Maîtrise de React, Node.js et Laravel.",
-        type: "work",
-      },
-      {
-        year: "2020",
-        title: "Lancement en freelance",
-        description: "Création de mon activité de consultant digital et développeur indépendant.",
-        type: "achievement",
-      },
-      {
-        year: "2021",
-        title: "Master en Génie Logiciel",
-        description: "Obtention d'un master avec mention, spécialisation en architecture logicielle et IA.",
-        type: "education",
-      },
-      {
-        year: "2022",
-        title: "Première plateforme SaaS",
-        description: "Conception et lancement d'une plateforme SaaS innovante pour la gestion d'entreprises.",
-        type: "achievement",
-      },
-      {
-        year: "2023",
-        title: "Expertise IA & Automation",
-        description: "Intégration de l'intelligence artificielle dans les solutions digitales et automation des processus.",
-        type: "work",
-      },
-      {
-        year: "2024",
-        title: "Leadership & Innovation",
-        description: "Direction de projets digitaux d'envergure et mentoring de développeurs émergents.",
-        type: "achievement",
-      },
-    ],
-    cvUrl: "/docs/cv-djosse-adechina.pdf",
+    presentation: profile.intro.join("\n\n"),
+    vision: vision.quote,
+    values: principles.map((item) => `${item.title} — ${item.description}`),
+    timeline: journey.map((item) => ({
+      year: item.year,
+      title: `${item.title} — ${item.place}`,
+      description: item.description,
+      type: timelineType(item.type),
+    })),
+    cvUrl: profile.cvUrl,
   },
 };

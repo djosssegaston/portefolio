@@ -20,9 +20,9 @@ export default function ServicesPage({ services = staticServices }: { services?:
     <div>
       <PageHero
         eyebrow="Services"
-        title="Des solutions digitales"
-        highlight="pensées pour grandir."
-        description="De la stratégie au lancement, je conçois des produits web et mobiles performants, accessibles et prêts à évoluer avec votre activité."
+        title="Des services techniques"
+        highlight="ancrés dans le réel."
+        description="Développement web, backend, bases de données, intégration de paiement et accompagnement technique : des prestations cadrées selon le besoin réel."
         breadcrumb={[{ label: "Accueil", href: "/" }, { label: "Services" }]}
         variant="torus"
       >
@@ -49,11 +49,11 @@ export default function ServicesPage({ services = staticServices }: { services?:
           <div className="mx-auto max-w-2xl text-center" data-reveal="up">
             <span className="section-label">Expertises</span>
             <h2 className="section-heading mt-5">
-              Une offre complète, <span className="gradient-text">sans compromis.</span>
+              Une approche technique, <span className="gradient-text">sans surpromesse.</span>
             </h2>
             <p className="section-desc">
-              Chaque mission est adaptée à votre contexte. Voici les domaines dans
-              lesquels je peux vous accompagner.
+              Chaque mission est cadrée selon votre contexte. Voici les domaines
+              dans lesquels je peux vous accompagner.
             </p>
           </div>
 

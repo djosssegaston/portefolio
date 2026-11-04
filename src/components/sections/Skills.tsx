@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { resolveIcon } from "@/components/shared/icon-map";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { skills as staticSkills } from "@/lib/data/skills";
@@ -35,12 +34,10 @@ const categoryOrder: SkillCategory[] = [
 
 function SkillCard({
   name,
-  level,
   icon,
   description,
 }: {
   name: string;
-  level: number;
   icon: string;
   description?: string;
 }) {
@@ -56,24 +53,14 @@ function SkillCard({
           <Icon className="h-5 w-5" />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <h4 className="font-heading text-sm font-semibold text-foreground">
-              {name}
-            </h4>
-            <span className="text-xs font-semibold tabular-nums text-primary">
-              {level}%
-            </span>
-          </div>
+          <h4 className="font-heading text-sm font-semibold text-foreground">
+            {name}
+          </h4>
           {description && (
-            <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-secondary">
+            <p className="mt-1 text-xs leading-relaxed text-secondary">
               {description}
             </p>
           )}
-          <Progress
-            value={level}
-            className="mt-3 h-1.5 bg-slate-100"
-            aria-label={`Niveau de compétence ${level}%`}
-          />
         </div>
       </div>
     </div>
@@ -82,7 +69,11 @@ function SkillCard({
 
 export default function Skills({ skills = staticSkills }: { skills?: Skill[] }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<string>(categoryOrder[0]);
+  const availableCategories = useMemo(
+    () => categoryOrder.filter((category) => skills.some((skill) => skill.category === category)),
+    [skills],
+  );
+  const [activeTab, setActiveTab] = useState<string>(availableCategories[0] ?? categoryOrder[0]);
 
   const filteredSkills = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
@@ -144,7 +135,7 @@ export default function Skills({ skills = staticSkills }: { skills?: Skill[] }) 
           className="w-full"
         >
           <TabsList className="mx-auto mb-10 flex h-auto flex-wrap justify-center gap-2 bg-transparent p-1">
-            {categoryOrder.map((cat) => (
+            {availableCategories.map((cat) => (
               <TabsTrigger
                 key={cat}
                 value={cat}
@@ -162,7 +153,6 @@ export default function Skills({ skills = staticSkills }: { skills?: Skill[] }) 
                   <SkillCard
                     key={skill.id}
                     name={skill.name}
-                    level={skill.level}
                     icon={skill.icon}
                     description={skill.description}
                   />

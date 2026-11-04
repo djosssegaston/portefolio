@@ -6,22 +6,16 @@ import Projects from "@/components/sections/Projects";
 import Experience from "@/components/sections/Experience";
 import Education from "@/components/sections/Education";
 import Certifications from "@/components/sections/Certifications";
-import Events from "@/components/sections/Events";
-import Testimonials from "@/components/sections/Testimonials";
-import Blog from "@/components/sections/Blog";
 import FAQ from "@/components/sections/FAQ";
 import Contact from "@/components/sections/Contact";
 import {
-  getBlogPosts,
   getCertifications,
   getEducation,
-  getEvents,
   getExperiences,
   getFaq,
   getProjects,
   getServices,
   getSkills,
-  getTestimonials,
 } from "@/lib/content";
 
 // Content is read from MySQL/TiDB and memoised in src/lib/content.ts.
@@ -29,7 +23,7 @@ import {
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [skills, services, projects, experiences, education, certifications, events, testimonials, blogPosts, faq] =
+  const [skills, services, projects, experiences, education, certifications, faq] =
     await Promise.all([
       getSkills(),
       getServices(),
@@ -37,9 +31,6 @@ export default async function HomePage() {
       getExperiences(),
       getEducation(),
       getCertifications(),
-      getEvents(),
-      getTestimonials({ validatedOnly: true }),
-      getBlogPosts({ publishedOnly: true }),
       getFaq(),
     ]);
 
@@ -53,9 +44,6 @@ export default async function HomePage() {
       <Experience experiences={experiences} />
       <Education education={education} />
       <Certifications certifications={certifications} />
-      <Events events={events} />
-      <Testimonials testimonials={testimonials} />
-      <Blog blogPosts={blogPosts} />
       <FAQ faq={faq} />
       <Contact />
     </>

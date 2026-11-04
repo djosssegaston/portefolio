@@ -317,10 +317,10 @@ export default function Contact() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">
-                  Réponse sous 24h
+                  Réponse par email ou WhatsApp
                 </p>
                 <p className="text-xs text-secondary">
-                  Du lundi au vendredi, de 9h à 18h
+                  Décrivez votre besoin, je reviens vers vous dès que possible
                 </p>
               </div>
             </div>
@@ -349,7 +349,7 @@ export default function Contact() {
             </div>
 
             <a
-              href="https://wa.me/22901234567"
+              href="https://wa.me/2290168552584"
               target="_blank"
               rel="noopener noreferrer"
               className="group flex items-center gap-3 rounded-2xl border border-accent/20 bg-accent/[0.06] p-4 transition-colors hover:border-accent/40 hover:bg-accent/[0.1]"
@@ -361,7 +361,7 @@ export default function Contact() {
                 <p className="text-sm font-semibold text-accent">
                   Discutons sur WhatsApp
                 </p>
-                <p className="text-xs text-accent/70">Réponse sous 24h</p>
+                <p className="text-xs text-accent/70">Échange direct</p>
               </div>
               <ArrowUpRight className="h-5 w-5 text-accent transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </a>

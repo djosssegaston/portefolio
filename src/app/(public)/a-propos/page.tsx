@@ -1,9 +1,13 @@
+import type { Metadata } from "next"
 import AProposContent from "./AProposContent"
-import { getSkills } from "@/lib/content"
 
-export const revalidate = 60
+export const metadata: Metadata = {
+  title: "À propos — DJOSSE Adechina Gaston",
+  description:
+    "Développeur full-stack diplômé en Systèmes Informatiques et Logiciels : parcours, expériences, projets et compétences de DJOSSE Adechina Gaston.",
+  alternates: { canonical: "/a-propos" },
+}
 
-export default async function AboutPage() {
-  const skills = await getSkills()
-  return <AProposContent skills={skills} />
+export default function AboutPage() {
+  return <AProposContent />
 }

@@ -11,6 +11,7 @@ import { blogPosts } from "../src/lib/data/blog-posts"
 import { services } from "../src/lib/data/services"
 import { faq } from "../src/lib/data/faq"
 import { events } from "../src/lib/data/events"
+import { siteConfig } from "../src/lib/data/site-config"
 
 function uuid() {
   return "id_" + Math.random().toString(36).slice(2, 15)
@@ -23,16 +24,16 @@ async function main() {
   })
   console.log("Connected\n")
 
-  // Clear tables. `admin_users` is intentionally preserved so the real account is never wiped.
+  // Clear content tables only. User data and conversations must survive a reseed.
   const tables = [
-    "chat_messages", "blog_comments", "blog_posts", "contact_messages", "event_trainings",
+    "blog_comments", "blog_posts", "event_trainings",
     "faq", "services", "testimonials", "certifications", "education", "experiences",
     "skills", "projects",
   ]
   for (const t of tables) {
     await connection.query(`DELETE FROM \`${t}\``)
   }
-  console.log("Cleared existing content data (admin_users kept)\n")
+  console.log("Cleared content tables (admin_users, messages and conversations kept)\n")
 
   // Projects
   for (const p of projects) {
@@ -153,6 +154,40 @@ async function main() {
     )
   }
   console.log(`✓ ${events.length} events`)
+
+  // Site config: refresh identity/content while preserving admin-uploaded media.
+  const configEntries: Record<string, unknown> = {
+    name: siteConfig.name,
+    fullName: siteConfig.fullName,
+    title: siteConfig.title,
+    description: siteConfig.description,
+    keywords: siteConfig.keywords,
+    email: siteConfig.email,
+    phone: siteConfig.phone,
+    location: siteConfig.location,
+    socialLinks: siteConfig.socialLinks,
+    stats: siteConfig.stats,
+    presentation: siteConfig.about.presentation,
+    about: siteConfig.about,
+    footerText: `© ${new Date().getFullYear()} ${siteConfig.fullName}. Tous droits réservés.`,
+  }
+  const preservedMediaKeys = new Set(["logo", "avatar", "aboutImage", "favicon", "ogImage", "demoVideo"])
+
+  for (const [key, value] of Object.entries(configEntries)) {
+    if (preservedMediaKeys.has(key)) {
+      await connection.execute(
+        "INSERT IGNORE INTO site_configs (id, cle, valeur) VALUES (?, ?, ?)",
+        [uuid(), key, JSON.stringify(value)]
+      )
+      continue
+    }
+    await connection.execute(
+      `INSERT INTO site_configs (id, cle, valeur) VALUES (?, ?, ?)
+       ON DUPLICATE KEY UPDATE valeur = VALUES(valeur), updated_at = CURRENT_TIMESTAMP`,
+      [uuid(), key, JSON.stringify(value)]
+    )
+  }
+  console.log(`✓ ${Object.keys(configEntries).length} site config entries synced (media preserved)`)
 
   await connection.end()
   console.log("\nSeed complete!")

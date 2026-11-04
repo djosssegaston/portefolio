@@ -218,9 +218,9 @@ export default function About() {
                 </div>
                 <div>
                   <p className="font-heading text-2xl font-semibold leading-none text-foreground">
-                    1+
+                    2
                   </p>
-                  <p className="mt-1 text-xs text-secondary">Ans d&apos;expérience</p>
+                  <p className="mt-1 text-xs text-secondary">Expériences professionnelles</p>
                 </div>
               </div>
             </div>

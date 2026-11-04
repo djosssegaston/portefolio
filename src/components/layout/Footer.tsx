@@ -4,17 +4,12 @@ import Link from "next/link";
 import {
   Linkedin,
   Github,
-  MessageCircle,
-  Facebook,
-  Twitter,
   Mail,
   MapPin,
   Phone,
   ArrowRight,
 } from "lucide-react";
 import { siteConfig } from "@/lib/data/site-config";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 const footerLinks = [
   {
@@ -31,12 +26,12 @@ const footerLinks = [
   {
     title: "Services",
     links: [
-      { name: "Développement Web", href: "/services" },
-      { name: "Applications Mobiles", href: "/services" },
-      { name: "Consulting Digital", href: "/services" },
-      { name: "UI/UX Design", href: "/services" },
-      { name: "SEO & Marketing", href: "/services" },
-      { name: "Formation", href: "/services" },
+      { name: "Développement web full-stack", href: "/services" },
+      { name: "Plateformes métier", href: "/services" },
+      { name: "API REST & intégrations", href: "/services" },
+      { name: "Paiement en ligne", href: "/services" },
+      { name: "Déploiement & maintenance", href: "/services" },
+      { name: "Accompagnement technique", href: "/services" },
     ],
   },
 ];
@@ -44,9 +39,6 @@ const footerLinks = [
 const socialIcons: Record<string, React.ElementType> = {
   Linkedin,
   Github,
-  MessageCircle,
-  Facebook,
-  Twitter,
   Mail,
 };
 
@@ -68,7 +60,7 @@ export default function Footer() {
                 </span>
               </Link>
               <p className="text-secondary text-sm leading-relaxed">
-                Développeur web & consultant digital spécialisé dans la création de solutions numériques innovantes.
+                Développeur full-stack basé à Porto-Novo. Conception et développement de sites web, plateformes métier et API REST.
               </p>
               <div className="flex items-center gap-2.5">
                 {siteConfig.socialLinks.map((social) => {
@@ -147,29 +139,6 @@ export default function Footer() {
                   </div>
                 </li>
               </ul>
-
-              <div className="pt-3 space-y-3">
-                <h4 className="font-heading font-semibold text-xs uppercase tracking-widest text-secondary">
-                  Newsletter
-                </h4>
-                <form
-                  onSubmit={(e) => e.preventDefault()}
-                  className="flex gap-2"
-                >
-                  <Input
-                    type="email"
-                    placeholder="Votre email"
-                    className="bg-muted border-0 placeholder:text-secondary/50 text-foreground h-10 text-sm"
-                  />
-                  <Button
-                    type="submit"
-                    size="icon"
-                    className="shrink-0"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
-                  </Button>
-                </form>
-              </div>
             </div>
           </div>
         </div>

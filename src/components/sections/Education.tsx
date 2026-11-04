@@ -13,11 +13,8 @@ const institutionColors = [
   "from-purple-500 to-pink-500",
 ];
 
-function formatFrenchDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("fr-FR", {
-    month: "long",
-    year: "numeric",
-  });
+function formatYear(dateStr: string) {
+  return new Date(dateStr).getFullYear().toString();
 }
 
 export default function Education({
@@ -81,8 +78,8 @@ export default function Education({
                 <div className="mt-3 flex items-center gap-1.5 text-xs text-secondary">
                   <Calendar className="h-3.5 w-3.5" />
                   <span>
-                    {formatFrenchDate(edu.startDate)} -{" "}
-                    {edu.current ? "Présent" : formatFrenchDate(edu.endDate!)}
+                    {formatYear(edu.startDate)} -{" "}
+                    {edu.current ? "Présent" : formatYear(edu.endDate!)}
                   </span>
                 </div>
 

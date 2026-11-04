@@ -351,7 +351,7 @@ export default function ChatbotModal() {
                   className="h-9 flex-1 border-0 bg-muted text-sm"
                 />
                 <a
-                  href="https://wa.me/0168552584"
+                  href="https://wa.me/2290168552584"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#25D366] text-white transition-all duration-300 hover:scale-110 hover:bg-[#25D366]/90"

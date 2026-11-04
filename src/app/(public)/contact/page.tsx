@@ -8,7 +8,7 @@ export default function ContactPage() {
         eyebrow="Contact"
         title="Donnons vie à"
         highlight="votre prochain projet."
-        description="Une idée, un besoin, une question ? Décrivez-moi votre contexte et je reviens vers vous sous 24 à 48 heures."
+        description="Une idée, un besoin, une question ? Décrivez votre contexte, vos contraintes et vos objectifs ; je vous répondrai par email ou WhatsApp."
         breadcrumb={[{ label: "Accueil", href: "/" }, { label: "Contact" }]}
         variant="waves"
       />

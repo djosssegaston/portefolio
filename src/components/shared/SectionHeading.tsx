@@ -9,6 +9,7 @@ type Props = {
   description?: string;
   align?: "left" | "center";
   className?: string;
+  revealTitle?: boolean;
 };
 
 /**
@@ -24,6 +25,7 @@ export default function SectionHeading({
   description,
   align = "center",
   className,
+  revealTitle = false,
 }: Props) {
   const centered = align === "center";
 
@@ -60,7 +62,12 @@ export default function SectionHeading({
         <span>{label}</span>
       </div>
 
-      <h2 className="section-heading relative mt-5" data-heading>
+      <h2
+        className="section-heading relative mt-5"
+        data-heading
+        data-reveal={revealTitle ? "up" : undefined}
+        data-reveal-delay={revealTitle ? "0.06" : undefined}
+      >
         {title}
         {highlight && (
           <>

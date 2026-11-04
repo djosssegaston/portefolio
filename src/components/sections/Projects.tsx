@@ -10,15 +10,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { projects as staticProjects } from "@/lib/data/projects";
 
-const categoryFilters = [
-  { value: "all", label: "Tous" },
-  { value: "web", label: "Web" },
-  { value: "mobile", label: "Mobile" },
-  { value: "saas", label: "SaaS" },
-  { value: "ecommerce", label: "E-commerce" },
-  { value: "dashboard", label: "Dashboard" },
-  { value: "api", label: "API" },
-] as const;
+const categoryLabels: Record<string, string> = {
+  web: "Web",
+  mobile: "Mobile",
+  saas: "SaaS",
+  ecommerce: "E-commerce",
+  dashboard: "Dashboard",
+  api: "API",
+};
 
 const gradients = [
   "from-blue-600 to-indigo-600",
@@ -33,13 +32,6 @@ const gradients = [
   "from-fuchsia-500 to-purple-600",
 ];
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("fr-FR", {
-    year: "numeric",
-    month: "long",
-  });
-}
-
 export default function Projects({
   projects = staticProjects,
 }: {
@@ -47,6 +39,14 @@ export default function Projects({
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
+
+  const categoryFilters = useMemo(() => {
+    const values = Array.from(new Set(projects.map((project) => project.category)));
+    return [
+      { value: "all", label: "Tous" },
+      ...values.map((value) => ({ value, label: categoryLabels[value] ?? value })),
+    ];
+  }, [projects]);
 
   const filteredProjects = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
@@ -164,9 +164,6 @@ export default function Projects({
                           {categoryFilters.find((c) => c.value === project.category)
                             ?.label ?? project.category}
                         </Badge>
-                        <span className="text-xs text-secondary">
-                          {formatDate(project.date)}
-                        </span>
                       </div>
                       <h3 className="font-heading text-lg font-semibold text-foreground transition-colors group-hover:text-primary">
                         {project.title}

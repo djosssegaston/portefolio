@@ -163,54 +163,58 @@ export default function BlogPage({
       >
         <div className="flex flex-wrap gap-3">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-medium text-slate-300 backdrop-blur-md">
-            {blogPosts.length} articles publiés
+            {blogPosts.length > 0
+              ? `${blogPosts.length} article${blogPosts.length > 1 ? "s" : ""} publié${blogPosts.length > 1 ? "s" : ""}`
+              : "Articles à venir"}
           </span>
           <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-medium text-slate-300 backdrop-blur-md">
             <Clock className="h-3.5 w-3.5 text-cyan-300" />
-            Lectures courtes et concrètes
+            {blogPosts.length > 0 ? "Lectures courtes et concrètes" : "Publication progressive"}
           </span>
         </div>
       </PageHero>
 
       <section className="section-shell !pt-16 sm:!pt-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="surface mx-auto mb-12 max-w-4xl p-4 sm:p-5" data-reveal="up">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Rechercher un article..."
-                value={searchQuery}
-                onChange={(event) => {
-                  setSearchQuery(event.target.value);
-                  setCurrentPage(1);
-                }}
-                className="h-12 rounded-xl border-border/70 bg-white pl-11 text-sm shadow-sm"
-                aria-label="Rechercher un article"
-              />
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  type="button"
-                  aria-pressed={activeCategory === category}
-                  onClick={() => {
-                    setActiveCategory(category);
+          {blogPosts.length > 0 && (
+            <div className="surface mx-auto mb-12 max-w-4xl p-4 sm:p-5" data-reveal="up">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Rechercher un article..."
+                  value={searchQuery}
+                  onChange={(event) => {
+                    setSearchQuery(event.target.value);
                     setCurrentPage(1);
                   }}
-                  className={cn(
-                    "rounded-full px-4 py-2 text-sm font-medium transition-all duration-300",
-                    activeCategory === category
-                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                      : "bg-slate-100 text-slate-500 hover:bg-slate-200/80 hover:text-slate-900",
-                  )}
-                >
-                  {categoryLabels[category] ?? category}
-                </button>
-              ))}
+                  className="h-12 rounded-xl border-border/70 bg-white pl-11 text-sm shadow-sm"
+                  aria-label="Rechercher un article"
+                />
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    type="button"
+                    aria-pressed={activeCategory === category}
+                    onClick={() => {
+                      setActiveCategory(category);
+                      setCurrentPage(1);
+                    }}
+                    className={cn(
+                      "rounded-full px-4 py-2 text-sm font-medium transition-all duration-300",
+                      activeCategory === category
+                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+                        : "bg-slate-100 text-slate-500 hover:bg-slate-200/80 hover:text-slate-900",
+                    )}
+                  >
+                    {categoryLabels[category] ?? category}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {paginatedPosts.length > 0 ? (
             <div ref={gridRef} className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -275,21 +279,31 @@ export default function BlogPage({
               <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
                 <Search className="h-6 w-6 text-muted-foreground" />
               </div>
-              <p className="text-lg font-medium text-muted-foreground">Aucun article trouvé</p>
-              <p className="mt-1 text-sm text-muted-foreground/70">
-                Essayez de modifier votre recherche ou votre filtre.
+              <p className="text-lg font-medium text-muted-foreground">
+                {blogPosts.length === 0 ? "Aucun article publié pour le moment" : "Aucun article trouvé"}
               </p>
-              <Button
-                variant="outline"
-                className="mt-6"
-                onClick={() => {
-                  setSearchQuery("");
-                  setActiveCategory("all");
-                  setCurrentPage(1);
-                }}
-              >
-                Réinitialiser les filtres
-              </Button>
+              <p className="mt-1 text-sm text-muted-foreground/70">
+                {blogPosts.length === 0
+                  ? "Les articles et retours d'expérience seront publiés progressivement."
+                  : "Essayez de modifier votre recherche ou votre filtre."}
+              </p>
+              {blogPosts.length === 0 ? (
+                <Button asChild className="mt-6">
+                  <Link href="/projets">Voir les projets</Link>
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="mt-6"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setActiveCategory("all");
+                    setCurrentPage(1);
+                  }}
+                >
+                  Réinitialiser les filtres
+                </Button>
+              )}
             </div>
           )}
 

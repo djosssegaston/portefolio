@@ -38,6 +38,14 @@ export default function ProjectDetailPage({ project, related }: { project: Proje
     web: "Web",
   }
 
+  const isInProgress = project.results.some((result) => /en cours|développement/i.test(result))
+  const isAcademic = project.results.some((result) => /académique|soutenance/i.test(result))
+  const projectStatusLabel = isInProgress
+    ? "En développement"
+    : isAcademic
+      ? "Projet académique"
+      : "Projet livré"
+
   return (
     <div>
       <PageHero
@@ -60,7 +68,7 @@ export default function ProjectDetailPage({ project, related }: { project: Proje
             {new Date(project.date).toLocaleDateString("fr-FR", { year: "numeric", month: "long" })}
           </span>
           <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-medium text-slate-300 backdrop-blur-md">
-            {project.status === "published" ? "Projet livré" : "Archivé"}
+            {project.status === "published" ? projectStatusLabel : "Archivé"}
           </span>
         </div>
       </PageHero>
@@ -90,56 +98,68 @@ export default function ProjectDetailPage({ project, related }: { project: Proje
               <p className="text-muted-foreground leading-relaxed">{project.longDescription}</p>
             </section>
 
-            <section data-reveal="up">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
-                  <AlertCircle className="w-5 h-5 text-red-500" />
-                </div>
-                <h2 className="font-heading text-2xl font-bold">Problématique</h2>
-              </div>
-              <p className="text-muted-foreground leading-relaxed">{project.problem}</p>
-            </section>
-
-            <section data-reveal="up">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                  <Lightbulb className="w-5 h-5 text-green-500" />
-                </div>
-                <h2 className="font-heading text-2xl font-bold">Solution</h2>
-              </div>
-              <p className="text-muted-foreground leading-relaxed mb-6">{project.solution}</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {project.keyFeatures.map((feature, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-start gap-3 p-4 bg-white rounded-xl border border-border"
-                  >
-                    <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-foreground">{feature}</span>
+            {project.problem && (
+              <section data-reveal="up">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
+                    <AlertCircle className="w-5 h-5 text-red-500" />
                   </div>
-                ))}
-              </div>
-            </section>
-
-            <section data-reveal="up">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-blue-500" />
+                  <h2 className="font-heading text-2xl font-bold">Problématique</h2>
                 </div>
-                <h2 className="font-heading text-2xl font-bold">Résultats</h2>
-              </div>
-              <ul className="space-y-3">
-                {project.results.map((result, idx) => (
-                  <li
-                    key={idx}
-                    className="flex items-start gap-3 p-4 bg-white rounded-xl border border-border"
-                  >
-                    <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-foreground">{result}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
+                <p className="text-muted-foreground leading-relaxed">{project.problem}</p>
+              </section>
+            )}
+
+            {project.solution && (
+              <section data-reveal="up">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                    <Lightbulb className="w-5 h-5 text-green-500" />
+                  </div>
+                  <h2 className="font-heading text-2xl font-bold">Solution</h2>
+                </div>
+                <p className="text-muted-foreground leading-relaxed">{project.solution}</p>
+              </section>
+            )}
+
+            {project.keyFeatures.length > 0 && (
+              <section data-reveal="up">
+                <h2 className="font-heading text-2xl font-bold mb-4">Fonctionnalités clés</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {project.keyFeatures.map((feature, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-start gap-3 p-4 bg-white rounded-xl border border-border"
+                    >
+                      <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                      <span className="text-foreground">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {project.results.length > 0 && (
+              <section data-reveal="up">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-blue-500" />
+                  </div>
+                  <h2 className="font-heading text-2xl font-bold">Résultats</h2>
+                </div>
+                <ul className="space-y-3">
+                  {project.results.map((result, idx) => (
+                    <li
+                      key={idx}
+                      className="flex items-start gap-3 p-4 bg-white rounded-xl border border-border"
+                    >
+                      <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-foreground">{result}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
 
             {project.testimonial && (
               <section data-reveal="up">
@@ -223,7 +243,7 @@ export default function ProjectDetailPage({ project, related }: { project: Proje
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Statut</span>
                     <Badge variant={project.status === "published" ? "default" : "secondary"}>
-                      {project.status === "published" ? "Terminé" : "Archivé"}
+                      {project.status === "published" ? projectStatusLabel : "Archivé"}
                     </Badge>
                   </div>
                 </div>

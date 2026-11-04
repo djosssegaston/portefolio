@@ -6,36 +6,39 @@ import ScrollReveal from "@/components/animation/ScrollReveal";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
-  title: "DJOSSE Adechina Gaston - Développeur Web & Consultant Digital",
+  title: "DJOSSE Adechina Gaston — Développeur Full-Stack",
   description:
-    "Portfolio professionnel de DJOSSE Adechina Gaston, développeur web, consultant digital et entrepreneur technologique.",
+    "Portfolio de DJOSSE Adechina Gaston, développeur full-stack diplômé en Systèmes Informatiques et Logiciels. Sites web, plateformes métier, API REST et intégrations de paiement.",
   keywords: [
+    "développeur full-stack",
     "développeur web",
-    "consultant digital",
     "portfolio",
     "bénin",
+    "porto-novo",
     "react",
-    "next.js",
     "laravel",
+    "php",
+    "mysql",
+    "postgresql",
   ],
   authors: [{ name: "DJOSSE Adechina Gaston" }],
   icons: { icon: "/images/favicon.ico" },
   openGraph: {
-    title: "DJOSSE Adechina Gaston - Développeur Web & Consultant Digital",
+    title: "DJOSSE Adechina Gaston — Développeur Full-Stack",
     description:
-      "Portfolio professionnel de DJOSSE Adechina Gaston, développeur web, consultant digital et entrepreneur technologique.",
+      "Sites web, plateformes métier, API REST et intégrations de paiement. Portfolio de DJOSSE Adechina Gaston.",
     url: "/",
     siteName: "DJOSSE Adechina Gaston",
-    images: ["/images/og-image.jpg"],
+    images: ["/images/avatar.jpg"],
     locale: "fr_FR",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "DJOSSE Adechina Gaston - Développeur Web & Consultant Digital",
+    title: "DJOSSE Adechina Gaston — Développeur Full-Stack",
     description:
-      "Portfolio professionnel de DJOSSE Adechina Gaston, développeur web, consultant digital et entrepreneur technologique.",
-    images: ["/images/og-image.jpg"],
+      "Sites web, plateformes métier, API REST et intégrations de paiement. Portfolio de DJOSSE Adechina Gaston.",
+    images: ["/images/avatar.jpg"],
   },
 };
 

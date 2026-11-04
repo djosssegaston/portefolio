@@ -7,11 +7,11 @@ import {
   MessageCircle,
   Briefcase,
   Code2,
-  Star,
+  Award,
   ChevronDown,
   Github,
   Linkedin,
-  Facebook,
+  Mail,
   ArrowUpRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,55 +22,34 @@ import LazyHeroScene from "@/components/three/LazyHeroScene";
 const DEFAULT_AVATAR = "/images/avatars/author.svg";
 
 const roles = [
-  "Développeur Full Stack",
-  "Architecte de solutions",
-  "Consultant digital",
+  "Développeur Full-Stack",
+  "Développeur PHP & Laravel",
+  "Concepteur de solutions numériques",
 ];
 
 const technologies = [
-  "Next.js",
-  "React",
-  "TypeScript",
-  "Node.js",
-  "Three.js",
-  "GSAP",
+  "PHP",
   "Laravel",
+  "React",
+  "JavaScript",
   "MySQL",
-  "Tailwind CSS",
-  "AWS",
+  "PostgreSQL",
+  "API REST",
+  "FedaPay",
   "Docker",
-  "IA & Automation",
+  "Git",
 ];
-
-function WhatsAppIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21z" />
-      <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1" />
-    </svg>
-  );
-}
 
 const socialIcons = [
   { name: "GitHub", icon: Github },
   { name: "LinkedIn", icon: Linkedin },
-  { name: "WhatsApp", icon: WhatsAppIcon },
-  { name: "Facebook", icon: Facebook },
+  { name: "Email", icon: Mail },
 ];
 
 const socialMap: Record<string, string> = {
   Github: "GitHub",
   Linkedin: "LinkedIn",
-  MessageCircle: "WhatsApp",
-  Facebook: "Facebook",
+  Mail: "Email",
 };
 
 function RoleRotator() {
@@ -263,9 +242,9 @@ export default function Hero() {
   }, []);
 
   const stats = [
-    { label: "Années d'expérience", value: 1, suffix: "+", icon: Briefcase },
-    { label: "Projets réalisés", value: 5, suffix: "+", icon: Code2 },
-    { label: "Satisfaction client", value: 98, suffix: "%", icon: Star },
+    { label: "Expériences", value: 2, suffix: "", icon: Briefcase },
+    { label: "Projets présentés", value: 4, suffix: "", icon: Code2 },
+    { label: "Certificat", value: 1, suffix: "", icon: Award },
   ];
 
   const socialLinks = siteConfig.socialLinks;
@@ -295,7 +274,7 @@ export default function Hero() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
               </span>
-              Disponible pour de nouveaux projets
+              Basé à Porto-Novo · Bénin
             </div>
 
             <h1 className="mt-6 font-heading text-[clamp(2.9rem,9vw,5.2rem)] font-semibold leading-[0.92] tracking-[-0.045em] text-white">
@@ -321,9 +300,9 @@ export default function Hero() {
             </div>
 
             <p className="hero-fade mx-auto mt-5 max-w-xl text-base leading-relaxed text-slate-400 sm:text-lg lg:mx-0">
-              Je conçois des plateformes web performantes, sécurisées et
-              évolutives qui aident les entreprises à automatiser leurs
-              processus et accélérer leur croissance.
+              Je conçois, développe et maintiens des sites web, des plateformes
+              métier et des API REST avec PHP/Laravel, React/JavaScript et
+              MySQL/PostgreSQL selon le besoin du projet.
             </p>
 
             <div className="hero-fade mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
@@ -345,9 +324,9 @@ export default function Hero() {
                 className="w-full rounded-full border-white/15 bg-white/[0.03] text-white backdrop-blur-md transition-colors hover:border-white/30 hover:bg-white/[0.07] hover:text-white sm:w-auto"
                 asChild
               >
-                <a href="#contact" aria-label="Planifier une consultation">
+                <a href="#contact" aria-label="Me contacter">
                   <MessageCircle className="h-4 w-4" />
-                  Planifier une consultation
+                  Me contacter
                 </a>
               </Button>
               <Button
@@ -451,7 +430,7 @@ export default function Hero() {
                 </span>
                 <div>
                   <p className="font-heading text-sm font-semibold leading-none text-white">
-                    5+
+                    4
                   </p>
                   <p className="mt-1 text-[10px] uppercase tracking-wider text-slate-400">
                     Projets
@@ -461,14 +440,14 @@ export default function Hero() {
 
               <div className="absolute -right-4 bottom-24 hidden items-center gap-2 rounded-2xl border border-white/10 bg-slate-950/70 px-3.5 py-2.5 shadow-xl backdrop-blur-xl sm:flex">
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-400/20 text-cyan-300">
-                  <Star className="h-4 w-4" />
+                  <Award className="h-4 w-4" />
                 </span>
                 <div>
                   <p className="font-heading text-sm font-semibold leading-none text-white">
-                    98%
+                    1
                   </p>
                   <p className="mt-1 text-[10px] uppercase tracking-wider text-slate-400">
-                    Satisfaction
+                    Certificat
                   </p>
                 </div>
               </div>

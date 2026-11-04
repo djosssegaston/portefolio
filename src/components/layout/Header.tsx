@@ -224,7 +224,7 @@ export default function Header() {
 
             <div className="flex items-center gap-2">
               <a
-                href="https://wa.me/0168552584"
+                href="https://wa.me/2290168552584"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
@@ -308,7 +308,7 @@ export default function Header() {
 
         <div data-mobile-link className="relative z-10 mt-auto">
           <a
-            href="https://wa.me/0168552584"
+            href="https://wa.me/2290168552584"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-slate-950"
@@ -317,7 +317,7 @@ export default function Header() {
             <ArrowUpRight className="h-4 w-4" />
           </a>
           <p className="mt-4 text-center text-xs text-slate-500">
-            Basé à Cotonou, Bénin · Disponible à distance
+            Basé à Porto-Novo, Bénin · Disponible à distance
           </p>
         </div>
       </div>

@@ -13,15 +13,14 @@ import { cn } from "@/lib/utils";
 import type { Project } from "@/types";
 import { projects as staticProjects } from "@/lib/data/projects";
 
-const categoryFilters = [
-  { value: "all", label: "Tous" },
-  { value: "saas", label: "SaaS" },
-  { value: "ecommerce", label: "E-commerce" },
-  { value: "mobile", label: "Mobile" },
-  { value: "dashboard", label: "Dashboard" },
-  { value: "api", label: "API" },
-  { value: "web", label: "Web" },
-] as const;
+const categoryLabels: Record<string, string> = {
+  web: "Web",
+  mobile: "Mobile",
+  saas: "SaaS",
+  ecommerce: "E-commerce",
+  dashboard: "Dashboard",
+  api: "API",
+};
 
 const gradients = [
   "from-blue-600 to-indigo-600",
@@ -53,6 +52,14 @@ export default function ProjectsPage({
   const gridRef = useRef<HTMLDivElement>(null);
   const emptyRef = useRef<HTMLDivElement>(null);
   const lastFilter = useRef<string | null>(null);
+
+  const categoryFilters = useMemo(() => {
+    const values = Array.from(new Set(projects.map((project) => project.category)));
+    return [
+      { value: "all", label: "Tous" },
+      ...values.map((value) => ({ value, label: categoryLabels[value] ?? value })),
+    ];
+  }, [projects]);
 
   const filteredProjects = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
@@ -115,18 +122,18 @@ export default function ProjectsPage({
         eyebrow="Portfolio"
         title="Des projets qui"
         highlight="parlent d'eux-mêmes."
-        description="Une sélection de produits conçus avec soin : plateformes SaaS, applications mobiles, dashboards et outils métiers."
+        description="Une sélection de projets réels : plateformes web, backends, intégration de paiement et solutions métiers."
         breadcrumb={[{ label: "Accueil", href: "/" }, { label: "Projets" }]}
         variant="ribbon"
       >
         <div className="flex flex-wrap gap-3">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-medium text-slate-300 backdrop-blur-md">
             <Sparkles className="h-3.5 w-3.5 text-cyan-300" />
-            {projects.length} projets publiés
+            {projects.length} projets documentés
           </span>
           <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-medium text-slate-300 backdrop-blur-md">
             <Star className="h-3.5 w-3.5 text-amber-300" />
-            Produits en production
+            Web, API & paiement
           </span>
         </div>
       </PageHero>
